@@ -1,8 +1,8 @@
 import { PrismaClient } from "../../generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
-import "dotenv/config";
+import { env } from "./env.js";
 
-const connectionString = `${process.env.DATABASE_URL}`;
+const connectionString = `${env.DATABASE_URL}`;
 
 const logOption: ("query" | "info" | "warn" | "error")[] =
   process.env.NODE_ENV !== "production" ? ["query", "info"] : ["error"];
