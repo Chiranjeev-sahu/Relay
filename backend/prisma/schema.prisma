@@ -3,6 +3,12 @@ generator client {
   output   = "../generated/prisma"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "../ERD.svg"
+}
+
+
 datasource db {
   provider = "postgresql"
 }
@@ -46,6 +52,17 @@ model Workspace {
   requests         Request[]
   environments     Environment[]
   workspaceMembers WorkspaceMember[]
+}
+model WorkspaceMember {
+  id          String    @id @default(uuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        Role      @default(VIEWER)
+  joinedAt    DateTime  @default(now())
+
+  @@unique([workspaceId, userId])
 }
 
 model Collection {
@@ -118,14 +135,3 @@ enum Role {
   VIEWER
 }
 
-model WorkspaceMember {
-  id          String    @id @default(uuid())
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role        Role      @default(VIEWER)
-  joinedAt    DateTime  @default(now())
-
-  @@unique([workspaceId, userId])
-}
