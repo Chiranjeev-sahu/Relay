@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import * as core from "express-serve-static-core";
 import { ParsedQs } from "qs";
-import { verifyToken } from "./token.js";
+import { verifyToken } from "../lib/token.js";
 
 interface AuthRequest<
   P = core.ParamsDictionary,
@@ -23,6 +23,7 @@ const verify = (req: AuthRequest, res: Response, next: NextFunction) => {
   }
 
   req.userId = decoded.sub;
+
   next();
 };
 
