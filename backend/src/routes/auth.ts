@@ -190,7 +190,7 @@ router.get(
 router.get(
   "/me",
   verify,
-  asyncHandler<AuthRequest>(async (req, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     if (!req.userId) {
       throw new AppError(401, "Unauthorized", []);
     }

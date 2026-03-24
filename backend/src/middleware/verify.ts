@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import * as core from "express-serve-static-core";
 import { ParsedQs } from "qs";
 import { verifyToken } from "../lib/token.js";
+import { Workspace } from "@generated/prisma/client.js";
 
 interface AuthRequest<
   P = core.ParamsDictionary,
@@ -10,6 +11,7 @@ interface AuthRequest<
   ReqQuery = ParsedQs,
 > extends Request<P, ResBody, ReqBody, ReqQuery> {
   userId?: string;
+  workspace?: Workspace;
 }
 const verify = (req: AuthRequest, res: Response, next: NextFunction) => {
   const token = req.cookies?.accessToken;
