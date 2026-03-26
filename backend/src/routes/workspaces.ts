@@ -6,6 +6,7 @@ import { Router } from "express";
 import { AppError } from "@/utils/AppError.js";
 import { prisma } from "@/lib/prisma.js";
 import { createId } from "@paralleldrive/cuid2";
+import { Role } from "@generated/prisma/enums.js";
 
 const router = Router();
 router.use(verify);
@@ -103,14 +104,17 @@ router.post(
   asyncHandler(async (req: AuthRequest<{}, {}, transferOwnerShipBody>, res) => {
     const workspaceId = req.workspace!.id;
     const currentUserId = req.userId!;
+
     const { targetUserId } = transferOwnerShipSchema.parse(req.body);
     if (currentUserId === targetUserId)
       return res.status(200).json({ message: "You are already the owner" });
+
     const updatedOwnerWorkspace = await prisma.$transaction([
       prisma.workspaceMember.update({
         where: { workspaceId_userId: { workspaceId, userId: currentUserId } },
         data: { role: "ADMIN" },
       }),
+
       prisma.workspaceMember.update({
         where: { workspaceId_userId: { workspaceId, userId: targetUserId } },
         data: { role: "OWNER" },
@@ -120,3 +124,109 @@ router.post(
     return res.status(200).json({ message: "Ownership updated" });
   })
 );
+
+router.get(
+  "/:workspaceId/members",
+  checkWorkspaceAccess("VIEWER"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = req.workspace!.id;
+
+    const members = await prisma.workspaceMember.findMany({
+      where: {
+        workspaceId: id,
+      },
+      select: {
+        role: true,
+        joinedAt: true,
+        user: {
+          select: {
+            name: true,
+            image: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({ members });
+  })
+);
+const changeMemberRoleSchema = z.object({
+  newRole: z.enum([Role.ADMIN, Role.MEMBER, Role.VIEWER]),
+});
+type changeMemberRoleBody = z.infer<typeof changeMemberRoleSchema>;
+
+router.patch(
+  "/:workspaceId/members/:userId/role",
+  checkWorkspaceAccess("ADMIN"),
+  asyncHandler(
+    async (
+      req: AuthRequest<{ workspaceId: string; userId: string }, {}, changeMemberRoleBody>,
+      res
+    ) => {
+      const { newRole } = changeMemberRoleSchema.parse(req.body);
+      const { workspaceId, userId } = req.params;
+      if (!newRole) return res.status(400).json({ message: "New user role required" });
+
+      const targetMember = await prisma.workspaceMember.findUnique({
+        where: { workspaceId_userId: { workspaceId, userId } },
+      });
+
+      if (!targetMember) {
+        return res.status(404).json({ message: "Member not found" });
+      }
+      if (targetMember.role === "OWNER") {
+        return res.status(403).json({ message: "Cannot change the Owner's role" });
+      }
+
+      const updatedRole = await prisma.workspaceMember.update({
+        where: { workspaceId_userId: { workspaceId, userId } },
+        data: { role: newRole },
+      });
+
+      return res.status(200).json({ message: "Role updated successfully", member: updatedRole });
+    }
+  )
+);
+
+router.delete(
+  "/:workspaceId/members/:userId",
+  checkWorkspaceAccess("ADMIN"),
+  asyncHandler(async (req: AuthRequest<{ workspaceId: string; userId: string }>, res) => {
+    const { workspaceId, userId } = req.params;
+
+    const targetMember = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId, userId } },
+    });
+
+    if (!targetMember) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+    if (targetMember.role === "OWNER") {
+      return res.status(403).json({ message: "Cannot change the Owner's role" });
+    }
+
+    const deletedUser = await prisma.workspaceMember.delete({
+      where: { workspaceId_userId: { workspaceId, userId } },
+    });
+
+    return res.status(200).json({ message: "Member removed successfully" });
+  })
+);
+
+// - `DELETE /:workspaceId` — delete entire workspace (OWNER only)
+router.delete(
+  "/:workspaceId",
+  checkWorkspaceAccess("OWNER"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = req.workspace!.id;
+
+    await prisma.workspace.delete({
+      where: { id },
+    });
+
+    return res.status(200).json({ message: "Workspace deleted successfully" });
+  })
+);
+
+export { router as workspacesRouter };
