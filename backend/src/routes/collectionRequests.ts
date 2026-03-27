@@ -53,7 +53,7 @@ router.post(
         },
       });
 
-      res.status(201).json({ success: "true", newRequest });
+      res.status(201).json({ success: true, newRequest });
     }
   )
 );
@@ -143,5 +143,4 @@ router.delete(
     }
   )
 );
-export default router;
-
+export { router as collectionRequestRouter };
