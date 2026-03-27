@@ -36,7 +36,7 @@ export const checkWorkspaceAccess = (minimumRole: Role) => {
         return res.status(403).json({ message: "Not a member" });
       }
       req.workspace = userData.workspace;
-
+      req.userRole = userData.role;
       next();
       return;
     }
