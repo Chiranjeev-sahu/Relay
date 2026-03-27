@@ -129,6 +129,8 @@ router.delete(
     ) => {
       const { collectionId, requestId } = req.params;
 
+      await getCollectionOrThrow(collectionId, req.params.workspaceId);
+
       const prevCollectionRequest = await prisma.collectionRequest.findFirst({
         where: { id: Number(requestId), collectionId: Number(collectionId) },
       });
