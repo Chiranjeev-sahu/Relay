@@ -13,6 +13,15 @@ export default tseslint.config(
       ecmaVersion: "latest",
       globals: globals.node,
     },
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",   
+          varsIgnorePattern: "^_",   
+        },
+      ],
+    },
   },
 
   prettierConfig,

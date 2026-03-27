@@ -4,7 +4,7 @@ import { AppError } from "@/utils/AppError.js";
 import { ZodError } from "zod";
 import { Prisma } from "../../generated/prisma/client.js";
 
-export const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction) => {
+export const errorHandler = (err: unknown, req: Request, res: Response, _next: NextFunction) => {
   let statusCode = 500;
   let message = "Internal server error occurred";
   let errors: unknown[] = [];

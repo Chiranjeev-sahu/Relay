@@ -109,7 +109,7 @@ router.post(
     if (currentUserId === targetUserId)
       return res.status(200).json({ message: "You are already the owner" });
 
-    const updatedOwnerWorkspace = await prisma.$transaction([
+    await prisma.$transaction([
       prisma.workspaceMember.update({
         where: { workspaceId_userId: { workspaceId, userId: currentUserId } },
         data: { role: "ADMIN" },
@@ -206,7 +206,7 @@ router.delete(
       return res.status(403).json({ message: "Cannot change the Owner's role" });
     }
 
-    const deletedUser = await prisma.workspaceMember.delete({
+    await prisma.workspaceMember.delete({
       where: { workspaceId_userId: { workspaceId, userId } },
     });
 
@@ -214,7 +214,6 @@ router.delete(
   })
 );
 
-// - `DELETE /:workspaceId` — delete entire workspace (OWNER only)
 router.delete(
   "/:workspaceId",
   checkWorkspaceAccess("OWNER"),
