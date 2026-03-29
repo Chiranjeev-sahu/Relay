@@ -4,18 +4,11 @@ import { prisma } from "@/lib/prisma.js";
 import { AppError } from "@/utils/AppError.js";
 import { asyncHandler } from "@/utils/asyncHandler.js";
 import { Router } from "express";
+import { getCollectionOrThrow } from "@/lib/ownership.js";
 import z from "zod";
 
 const router = Router();
 router.use(verify);
-
-async function getCollectionOrThrow(collectionId: string, workspaceId: string) {
-  const collection = await prisma.collection.findFirst({
-    where: { id: Number(collectionId), workspaceId },
-  });
-  if (!collection) throw new AppError(404, "Collection not found in this workspace");
-  return collection;
-}
 
 const collectionReqeustBody = z.object({
   name: z.string().min(1),

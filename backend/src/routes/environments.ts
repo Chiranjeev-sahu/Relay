@@ -3,6 +3,7 @@ import { checkWorkspaceAccess } from "@/middleware/checkWorkspaceAccess.js";
 import { AuthRequest, verify } from "@/middleware/verify.js";
 import { asyncHandler } from "@/utils/asyncHandler.js";
 import { Router } from "express";
+import { getEnvironmentOrThrow } from "@/lib/ownership.js";
 import z from "zod";
 
 import { AppError } from "@/utils/AppError.js";
@@ -22,15 +23,6 @@ function maskVariablesByRole(variables: any[], role: Role | undefined) {
     }
     return v;
   });
-}
-
-async function getEnvironmentOrThrow(envId: string, workspaceId: string) {
-  const env = await prisma.environment.findFirst({
-    where: { id: envId, workspaceId },
-    include: { environmentVariables: true },
-  });
-  if (!env) throw new AppError(404, "Environment not found in this workspace");
-  return env;
 }
 
 const envSchema = z.object({
@@ -129,6 +121,7 @@ router.delete(
 const variableSchema = z.object({
   key: z.string().min(1),
   value: z.string(),
+  description: z.string().nullish(),
   secret: z.boolean().default(false),
 });
 
@@ -136,10 +129,16 @@ const updateVariableSchema = z
   .object({
     key: z.string().min(1).optional(),
     value: z.string().optional(),
+    description: z.string().nullish(),
     secret: z.boolean().optional(),
   })
+
   .refine(
-    (data) => data.key !== undefined || data.value !== undefined || data.secret !== undefined,
+    (data) =>
+      data.key !== undefined ||
+      data.value !== undefined ||
+      data.secret !== undefined ||
+      data.description !== undefined,
     {
       message: "At least one field must be provided for update",
     }

@@ -4,7 +4,9 @@ import { AuthRequest, verify } from "@/middleware/verify.js";
 import { AppError } from "@/utils/AppError.js";
 import { asyncHandler } from "@/utils/asyncHandler.js";
 import { Router } from "express";
+import { getCollectionOrThrow } from "@/lib/ownership.js";
 import z from "zod";
+
 
 const router = Router();
 router.use(verify);
@@ -14,6 +16,9 @@ const collectionSchema = z.object({
   description: z.string().nullish(),
 });
 type collectionBody = z.infer<typeof collectionSchema>;
+
+
+
 router.post(
   "/:workspaceId/collections",
   checkWorkspaceAccess("MEMBER"),
@@ -33,7 +38,7 @@ router.post(
     return res.status(201).json({
       success: true,
       message: "Collection created successfully",
-      workspace: newCollection,
+      collection: newCollection,
     });
   })
 );
@@ -55,16 +60,16 @@ router.get(
 router.get(
   "/:workspaceId/collections/:collectionId",
   checkWorkspaceAccess("VIEWER"),
-  asyncHandler(async (req: AuthRequest<{ collectionId: string }>, res) => {
-    const { collectionId } = req.params;
-    const id = Number(collectionId);
-    if (Number.isNaN(id)) throw new AppError(400, "Invalid collection ID");
+  asyncHandler(async (req: AuthRequest<{ collectionId: string; workspaceId: string }>, res) => {
+    const { collectionId, workspaceId } = req.params;
+
+    const collection = await getCollectionOrThrow(collectionId, workspaceId);
 
     const allRequests = await prisma.collectionRequest.findMany({
-      where: { collectionId: id },
+      where: { collectionId: collection.id },
     });
 
-    return res.status(200).json({ success: true, allRequests });
+    return res.status(200).json({ success: true, collection, allRequests });
   })
 );
 
@@ -81,33 +86,39 @@ type UpdateBodyType = z.infer<typeof updateBodySchema>;
 router.put(
   "/:workspaceId/collections/:collectionId",
   checkWorkspaceAccess("MEMBER"),
-  asyncHandler(async (req: AuthRequest<{ collectionId: string }, {}, UpdateBodyType>, res) => {
-    const { collectionId } = req.params;
-    const id = Number(collectionId);
-    if (Number.isNaN(id)) throw new AppError(400, "Invalid collection ID");
+  asyncHandler(
+    async (
+      req: AuthRequest<{ collectionId: string; workspaceId: string }, {}, UpdateBodyType>,
+      res
+    ) => {
+      const { collectionId, workspaceId } = req.params;
 
-    const data = updateBodySchema.parse(req.body);
-    const updateData = Object.fromEntries(
-      Object.entries(data).filter(([, val]) => val !== undefined)
-    );
-    const updated = await prisma.collection.update({
-      where: { id },
-      data: updateData,
-    });
-    return res.status(200).json({ success: true, collection: updated });
-  })
+      const collection = await getCollectionOrThrow(collectionId, workspaceId);
+
+      const data = updateBodySchema.parse(req.body);
+      const updateData = Object.fromEntries(
+        Object.entries(data).filter(([, val]) => val !== undefined)
+      );
+
+      const updated = await prisma.collection.update({
+        where: { id: collection.id },
+        data: updateData,
+      });
+      return res.status(200).json({ success: true, collection: updated });
+    }
+  )
 );
 
 router.delete(
   "/:workspaceId/collections/:collectionId",
   checkWorkspaceAccess("ADMIN"),
-  asyncHandler(async (req: AuthRequest<{ collectionId: string }>, res) => {
-    const { collectionId } = req.params;
-    const id = Number(collectionId);
-    if (Number.isNaN(id)) throw new AppError(400, "Invalid collection ID");
+  asyncHandler(async (req: AuthRequest<{ collectionId: string; workspaceId: string }>, res) => {
+    const { collectionId, workspaceId } = req.params;
+
+    const collection = await getCollectionOrThrow(collectionId, workspaceId);
 
     await prisma.collection.delete({
-      where: { id },
+      where: { id: collection.id },
     });
 
     return res.status(200).json({ message: "Deletion complete" });
