@@ -123,10 +123,12 @@ model EnvironmentVariable {
   id            Int         @id @default(autoincrement())
   key           String
   value         String
+  description   String?
   secret        Boolean     @default(false)
   environmentId String
   environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
 }
+
 
 enum Role {
   OWNER
