@@ -29,8 +29,11 @@ router.post("/", async (req, res, next) => {
 
     const { url, method, headers, body, timeout, environmentId } = parsedReq.data;
 
-    let finalUrl = url;
+    const token = req.cookies?.accessToken;
+    const decoded = token ? verifyToken(token) : null;
+    const user = decoded ? (decoded as any) : null;
 
+    let finalUrl = url;
     let finalHeaders = headers || {};
     let finalBody = body;
 
@@ -38,25 +41,24 @@ router.post("/", async (req, res, next) => {
     let loggedHeaders = headers || {};
     let loggedBody = body;
 
-    let user: any = null;
     let environment: any = null;
 
     if (environmentId) {
-      const authHeader = req.headers.authorization;
-      if (!authHeader)
-        throw new AppError(401, "Authentication required for workspace environments");
-
-      user = verifyToken(authHeader);
+      if (!user) {
+        throw new AppError(401, "Authentication required to use workspace environments");
+      }
 
       environment = await prisma.environment.findFirst({
         where: {
           id: environmentId,
-          workspace: { workspaceMembers: { some: { userId: user.id } } },
+          workspace: { workspaceMembers: { some: { userId: user.sub } } },
         },
         include: { environmentVariables: true },
       });
 
-      if (!environment) throw new AppError(403, "Access denied to this environment");
+      if (!environment) {
+        throw new AppError(403, "Access denied to this environment or it does not exist");
+      }
 
       const variables = environment.environmentVariables;
 
@@ -84,18 +86,33 @@ router.post("/", async (req, res, next) => {
 
     const response = await axios(config);
 
-    await prisma.request.create({
-      data: {
-        method,
-        url: loggedUrl,
-        headers: loggedHeaders as any,
-        body: loggedBody as any,
-        responseStatus: response.status,
-        responseBody: response.data ?? null,
-        userId: user?.id ?? null,
-        workspaceId: environment?.workspaceId ?? null,
-      },
-    });
+    if (user) {
+      let responseToLog = response.data;
+      const responseSize = JSON.stringify(response.data || "").length;
+      if (responseSize > 20000) {
+        responseToLog = {
+          _relay_truncated: true,
+          _original_size: responseSize,
+          data:
+            typeof response.data === "string"
+              ? response.data.slice(0, 5000)
+              : "Response too large for history log",
+        };
+      }
+
+      await prisma.request.create({
+        data: {
+          method,
+          url: loggedUrl,
+          headers: loggedHeaders as any,
+          body: loggedBody as any,
+          responseStatus: response.status,
+          responseBody: responseToLog as any,
+          userId: user.sub, // Using sub from JWT payload
+          workspaceId: environment?.workspaceId ?? null,
+        },
+      });
+    }
 
     res.json({
       status: response.status,
@@ -105,7 +122,7 @@ router.post("/", async (req, res, next) => {
     });
   } catch (error: any) {
     if (error.code === "ECONNREFUSED")
-      return next(new AppError(502, "Target server refused context"));
+      return next(new AppError(502, "Target server refused contact"));
     if (error.code === "ENOTFOUND") return next(new AppError(502, "Hostname not found"));
     if (error.code === "ECONNABORTED") return next(new AppError(504, "Request timed out"));
     next(error);

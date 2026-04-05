@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma.js";
 import { checkWorkspaceAccess } from "@/middleware/checkWorkspaceAccess.js";
 import { AuthRequest, verify } from "@/middleware/verify.js";
-import { AppError } from "@/utils/AppError.js";
 import { asyncHandler } from "@/utils/asyncHandler.js";
 import { Router } from "express";
 import { getCollectionOrThrow } from "@/lib/ownership.js";
@@ -64,7 +63,7 @@ router.get(
 
     const allRequests = await prisma.collectionRequest.findMany({
       where: {
-        collectionId: id,
+        collectionId: collection.id,
         collection: {
           workspaceId: req.workspace!.id,
         },
@@ -102,7 +101,10 @@ router.put(
         Object.entries(data).filter(([, val]) => val !== undefined)
       );
       const updated = await prisma.collection.update({
-        where: { id, workspaceId: req.workspace!.id },
+        where: {
+          id: collection.id,
+          workspaceId: req.workspace!.id,
+        },
         data: updateData,
       });
       return res.status(200).json({ success: true, collection: updated });
@@ -119,7 +121,10 @@ router.delete(
     const collection = await getCollectionOrThrow(collectionId, workspaceId);
 
     await prisma.collection.delete({
-      where: { id, workspaceId: req.workspace!.id },
+      where: {
+        id: collection.id,
+        workspaceId: req.workspace!.id,
+      },
     });
 
     return res.status(200).json({ message: "Deletion complete" });

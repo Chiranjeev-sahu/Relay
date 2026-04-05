@@ -98,11 +98,16 @@ router.put(
 
     const { name } = envNameSchema.parse(req.body);
 
-    await prisma.environment.update({
-      where: { id: envId },
+    const updated = await prisma.environment.update({
+      where: {
+        id_workspaceId: {
+          id: envId,
+          workspaceId: req.workspace!.id,
+        },
+      },
       data: { name },
     });
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true, environment: updated });
   })
 );
 
@@ -113,7 +118,14 @@ router.delete(
     const { envId } = req.params;
     await getEnvironmentOrThrow(envId, req.workspace!.id);
 
-    await prisma.environment.delete({ where: { id: envId } });
+    await prisma.environment.delete({
+      where: {
+        id_workspaceId: {
+          id: envId,
+          workspaceId: req.workspace!.id,
+        },
+      },
+    });
     res.status(204).send();
   })
 );
@@ -191,7 +203,12 @@ router.put(
       );
 
       const updatedVar = await prisma.environmentVariable.update({
-        where: { id: Number(varId) },
+        where: {
+          id_environmentId: {
+            id: Number(varId),
+            environmentId: envId,
+          },
+        },
         data: updateData,
       });
 
@@ -209,12 +226,14 @@ router.delete(
 
     await getEnvironmentOrThrow(envId, workspaceId);
 
-    const prevVar = await prisma.environmentVariable.findFirst({
-      where: { id: Number(varId), environmentId: envId },
+    await prisma.environmentVariable.delete({
+      where: {
+        id_environmentId: {
+          id: Number(varId),
+          environmentId: envId,
+        },
+      },
     });
-    if (!prevVar) throw new AppError(404, "Variable not found in this environment");
-
-    await prisma.environmentVariable.delete({ where: { id: Number(varId) } });
     res.status(204).send();
   })
 );

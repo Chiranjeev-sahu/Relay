@@ -1,7 +1,6 @@
 import { checkWorkspaceAccess } from "@/middleware/checkWorkspaceAccess.js";
 import { AuthRequest, verify } from "@/middleware/verify.js";
 import { prisma } from "@/lib/prisma.js";
-import { AppError } from "@/utils/AppError.js";
 import { asyncHandler } from "@/utils/asyncHandler.js";
 import { Router } from "express";
 import { getCollectionOrThrow } from "@/lib/ownership.js";
@@ -86,24 +85,18 @@ router.put(
 
       await getCollectionOrThrow(collectionId, req.params.workspaceId);
 
-      const prevCollectionRequest = await prisma.collectionRequest.findFirst({
-        where: {
-          id: Number(requestId),
-          collectionId: Number(collectionId),
-        },
-      });
-
-      if (!prevCollectionRequest)
-        throw new AppError(404, "CollectionRequest not found in this collection");
-
       const data = updateRequestBody.parse(req.body);
-
       const updateData = Object.fromEntries(
         Object.entries(data).filter(([, val]) => val !== undefined)
       );
 
       const newCollectionRequest = await prisma.collectionRequest.update({
-        where: { id: Number(requestId) },
+        where: {
+          id_collectionId: {
+            id: Number(requestId),
+            collectionId: Number(collectionId),
+          },
+        },
         data: updateData,
       });
 
@@ -124,13 +117,14 @@ router.delete(
 
       await getCollectionOrThrow(collectionId, req.params.workspaceId);
 
-      const prevCollectionRequest = await prisma.collectionRequest.findFirst({
-        where: { id: Number(requestId), collectionId: Number(collectionId) },
+      await prisma.collectionRequest.delete({
+        where: {
+          id_collectionId: {
+            id: Number(requestId),
+            collectionId: Number(collectionId),
+          },
+        },
       });
-      if (!prevCollectionRequest)
-        throw new AppError(404, "CollectionRequest not found in this collection");
-
-      await prisma.collectionRequest.delete({ where: { id: Number(requestId) } });
 
       res.status(204).send();
     }

@@ -21,6 +21,9 @@ export const errorHandler = (err: unknown, req: Request, res: Response, _next: N
     if (err.code === "P2002") {
       statusCode = 409;
       message = "A record with this value already exists";
+    } else if (err.code === "P2025") {
+      statusCode = 404;
+      message = "Record not found or access denied";
     }
   } else if (err instanceof Error) {
     if (err.name === "TokenExpiredError") {
