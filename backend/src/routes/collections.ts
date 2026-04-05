@@ -7,7 +7,6 @@ import { Router } from "express";
 import { getCollectionOrThrow } from "@/lib/ownership.js";
 import z from "zod";
 
-
 const router = Router();
 router.use(verify);
 
@@ -16,8 +15,6 @@ const collectionSchema = z.object({
   description: z.string().nullish(),
 });
 type collectionBody = z.infer<typeof collectionSchema>;
-
-
 
 router.post(
   "/:workspaceId/collections",
@@ -66,7 +63,12 @@ router.get(
     const collection = await getCollectionOrThrow(collectionId, workspaceId);
 
     const allRequests = await prisma.collectionRequest.findMany({
-      where: { collectionId: collection.id },
+      where: {
+        collectionId: id,
+        collection: {
+          workspaceId: req.workspace!.id,
+        },
+      },
     });
 
     return res.status(200).json({ success: true, collection, allRequests });
@@ -99,9 +101,8 @@ router.put(
       const updateData = Object.fromEntries(
         Object.entries(data).filter(([, val]) => val !== undefined)
       );
-
       const updated = await prisma.collection.update({
-        where: { id: collection.id },
+        where: { id, workspaceId: req.workspace!.id },
         data: updateData,
       });
       return res.status(200).json({ success: true, collection: updated });
@@ -118,7 +119,7 @@ router.delete(
     const collection = await getCollectionOrThrow(collectionId, workspaceId);
 
     await prisma.collection.delete({
-      where: { id: collection.id },
+      where: { id, workspaceId: req.workspace!.id },
     });
 
     return res.status(200).json({ message: "Deletion complete" });

@@ -33,7 +33,7 @@ export const checkWorkspaceAccess = (minimumRole: Role) => {
       if (!userData) return res.status(403).json({ message: "Not a member" });
 
       if (ROLE_RANK[userData.role] < ROLE_RANK[minimumRole]) {
-        return res.status(403).json({ message: "Not a member" });
+        return res.status(403).json({ message: "Insufficient permissions" });
       }
       req.workspace = userData.workspace;
       req.userRole = userData.role;

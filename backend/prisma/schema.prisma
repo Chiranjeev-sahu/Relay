@@ -74,6 +74,9 @@ model Collection {
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   collectionRequests CollectionRequest[]
+  
+  @@unique([id, workspaceId])
+  @@unique([workspaceId, name])
 }
 
 model Request {
@@ -107,6 +110,8 @@ model CollectionRequest {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   requests     Request[]
+
+  @@unique([id, collectionId])
 }
 
 model Environment {
@@ -117,6 +122,8 @@ model Environment {
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   environmentVariables EnvironmentVariable[]
+
+  @@unique([id, workspaceId])
 }
 
 model EnvironmentVariable {
@@ -127,6 +134,10 @@ model EnvironmentVariable {
   secret        Boolean     @default(false)
   environmentId String
   environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  @@unique([environmentId, key])
+  @@unique([id, environmentId])
+
 }
 
 
