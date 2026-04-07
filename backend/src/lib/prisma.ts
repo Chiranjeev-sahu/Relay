@@ -5,7 +5,7 @@ import { env } from "./env.js";
 const connectionString = `${env.DATABASE_URL}`;
 
 const logOption: ("query" | "info" | "warn" | "error")[] =
-  process.env.NODE_ENV !== "production" ? ["query", "info"] : ["error"];
+  process.env.NODE_ENV !== "production" ? ["query", "info"] : ["warn", "error"];
 
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter, log: logOption });
