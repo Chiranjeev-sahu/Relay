@@ -124,7 +124,7 @@ router.get(
       });
 
       const payload = ticket.getPayload();
-      if (!payload || !payload.email) {
+      if (!payload || !payload.email || !payload.email_verified) {
         return res.redirect(`${env.FRONTEND_URL}/login?error=oauth_failed`);
       }
       const { sub, email, name, picture } = payload;
