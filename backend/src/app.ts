@@ -22,7 +22,7 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1", workspacesRouter);
+app.use("/api/v1/workspaces", workspacesRouter);
 app.use("/api/v1", collectionsRouter);
 app.use("/api/v1", collectionRequestRouter);
 app.use("/api/v1", environmentsRouter);

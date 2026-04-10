@@ -194,7 +194,7 @@ export const googleCallback = async (req: Request, res: Response) => {
     res.clearCookie("state");
     const token = generateToken(user.id);
     setAuthCookie(res as any, token);
-    return res.redirect(`${env.FRONTEND_URL}/dashboard`);
+    return res.redirect(`${env.FRONTEND_URL}/workspace`);
   } catch (error) {
     console.error("Google OAuth callback error:", error);
     return res.redirect(`${env.FRONTEND_URL}/login?error=oauth_failed`);
