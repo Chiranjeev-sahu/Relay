@@ -16,7 +16,7 @@ export const getWorkspaces = async (req: AuthRequest, res: Response) => {
     name: m.workspace.name,
     description: m.workspace.description,
     role: m.role,
-    inviteCode: m.workspace.inviteCode,
+    inviteCode: ["OWNER", "ADMIN"].includes(m.role) ? m.workspace.inviteCode : null,
   }));
 
   return res.status(200).json({ success: true, workspaces });
@@ -37,6 +37,12 @@ export const createWorkspace = async (req: AuthRequest, res: Response) => {
       description: description ?? null,
       workspaceMembers: {
         create: { userId, role: "OWNER" },
+      },
+      collections: {
+        create: {
+          name: "My APIs",
+          description: "Your default collection",
+        },
       },
     },
   });
