@@ -89,6 +89,7 @@ export const proxyRequest = async (req: AuthRequest, res: Response) => {
       return res.status(500).json({
         success: false,
         error: error.message,
+        code: error.code,
         details: "Relay Proxy failed to execute the request.",
       });
     }
@@ -119,7 +120,7 @@ export const proxyRequest = async (req: AuthRequest, res: Response) => {
         headers: responseHeaders,
         data: responseData,
         duration,
-        size: JSON.stringify(responseData || {}).length,
+        size: Buffer.byteLength(JSON.stringify(responseData || {}), "utf8"),
       },
     });
   } catch (error: any) {
