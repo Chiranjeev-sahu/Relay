@@ -1,5 +1,8 @@
+import { Badge } from "@/components/ui/badge"
 import { useWorkspaces } from "../hooks"
 import { useWorkspaceStore } from "../store"
+import type { Workspace } from "../types"
+import { cn } from "@/lib/utils"
 
 export const WorkspaceSwitcher = () => {
   const { data, isLoading, error } = useWorkspaces()
@@ -10,20 +13,20 @@ export const WorkspaceSwitcher = () => {
     console.error("Busted:", error)
   }
   return (
-    <select
-      className="w-full rounded bg-slate-800 p-2 text-white"
-      value={activeWorkspaceId || ""} // Controlled component
-      onChange={(e) => setActiveWorkspace(e.target.value)}
-    >
-      <option value="" disabled>
-        Select Workspace
-      </option>
-
-      {data?.workspaces?.map((workspace: any) => (
-        <option key={workspace.id} value={workspace.id}>
-          {workspace.name}
-        </option>
+    <div className="p-3">
+      {data?.workspaces?.map((workspace: Workspace) => (
+        <div
+          key={workspace.id}
+          className={cn(
+            "flex justify-between",
+            activeWorkspaceId === workspace.id && "bg-accent"
+          )}
+          onClick={() => setActiveWorkspace(workspace.id)}
+        >
+          <p>{workspace.name}</p>
+          <Badge>{workspace.role}</Badge>
+        </div>
       ))}
-    </select>
+    </div>
   )
 }

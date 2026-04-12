@@ -3,13 +3,15 @@ import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from "@/components/ui/resizable"
-import { WorkspaceSwitcher } from "@/features/workspace/components/workspace-switcher"
-import { cn } from "@/lib/utils"
-import { useUIstore } from "@/stores/ui-store"
+} from "@/components/ui/resizable";
+import { ComposerBar } from "@/features/request-composer/components/composer-address-bar";
+import { ResponsePane } from "@/features/response-viewer/components/response-pane";
+import { WorkspaceSwitcher } from "@/features/workspace/components/workspace-switcher";
+import { cn } from "@/lib/utils";
+import { useUIstore } from "@/stores/ui-store";
 
 export function AppShell() {
-  const { isLeftOpen, isRightOpen, toggleLeft, toggleRight } = useUIstore()
+  const { isLeftOpen, isRightOpen, toggleLeft, toggleRight } = useUIstore();
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
@@ -31,17 +33,15 @@ export function AppShell() {
         <ResizablePanelGroup orientation="horizontal" className="flex-1">
           <ResizablePanel defaultSize="80%" minSize="30%">
             <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel defaultSize="50%" minSize="20%">
-                <div className="h-full overflow-y-auto bg-background p-4">
-                  Request Composer (URL Bar, Headers, Body)
-                </div>
+              <ResizablePanel defaultSize="70%" minSize="20%">
+                <ComposerBar />
               </ResizablePanel>
 
               <ResizableHandle />
 
-              <ResizablePanel defaultSize="50%" minSize="20%">
+              <ResizablePanel defaultSize="30%" minSize="20%">
                 <div className="h-full overflow-y-auto border-t bg-muted/10 p-4">
-                  Response JSON Viewer
+                  <ResponsePane />
                 </div>
               </ResizablePanel>
             </ResizablePanelGroup>
@@ -50,7 +50,7 @@ export function AppShell() {
           {isRightOpen && (
             <>
               <ResizableHandle className="hover" />
-              <ResizablePanel defaultSize="25%" maxSize="35%" minSize="25%">
+              <ResizablePanel defaultSize="20%" maxSize="35%" minSize="20%">
                 <aside className="h-full overflow-y-auto bg-muted/30 p-2">
                   <div className="p-4">Collections / Env / History</div>
                 </aside>
@@ -75,5 +75,5 @@ export function AppShell() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
