@@ -1,17 +1,24 @@
-import { Badge } from "@/components/ui/badge"
-import { useWorkspaces } from "../hooks"
-import { useWorkspaceStore } from "../store"
-import type { Workspace } from "../types"
-import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge";
+import { useWorkspaces } from "../hooks";
+import { useWorkspaceStore } from "../store";
+import type { Workspace } from "../types";
+import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 
 export const WorkspaceSwitcher = () => {
-  const { data, isLoading, error } = useWorkspaces()
-  const { activeWorkspaceId, setActiveWorkspace } = useWorkspaceStore()
+  const { data, isLoading, error } = useWorkspaces();
+  const { activeWorkspaceId, setActiveWorkspace } = useWorkspaceStore();
+  useEffect(() => {
+    if (data?.workspaces?.length && !activeWorkspaceId) {
+      setActiveWorkspace(data.workspaces[0].id);
+    }
+  }, [data, activeWorkspaceId, setActiveWorkspace]);
 
-  if (isLoading) return <p className="p-4 text-sm">Loading workspaces...</p>
+  if (isLoading) return <p className="p-4 text-sm">Loading workspaces...</p>;
   if (error) {
-    console.error("Busted:", error)
+    console.error("Busted:", error);
   }
+
   return (
     <div className="p-3">
       {data?.workspaces?.map((workspace: Workspace) => (
@@ -28,5 +35,5 @@ export const WorkspaceSwitcher = () => {
         </div>
       ))}
     </div>
-  )
-}
+  );
+};

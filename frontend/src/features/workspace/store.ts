@@ -1,9 +1,9 @@
-import { create } from "zustand"
-import { persist } from "zustand/middleware"
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface WorkspaceState {
-  activeWorkspaceId: string | null
-  setActiveWorkspace: (id: string) => void
+  activeWorkspaceId: string | null;
+  setActiveWorkspace: (id: string) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>()(
@@ -12,11 +12,11 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       activeWorkspaceId: null,
 
       setActiveWorkspace: (id: string) => {
-        set({ activeWorkspaceId: id })
+        set({ activeWorkspaceId: id });
       },
     }),
     {
       name: "relay-workspace-storage",
     }
   )
-)
+);
