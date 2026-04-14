@@ -10,6 +10,15 @@ export type HttpMethod =
   | "DELETE"
   | "OPTIONS";
 
+export interface ProxyResponse {
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  data: any;
+  duration: number;
+  size: number;
+}
+
 interface ComposerState {
   method: HttpMethod;
   url: string;
@@ -21,8 +30,8 @@ interface ComposerState {
   setHeaders: (headers: Record<string, string>) => void;
   setBody: (body: string) => void;
 
-  // Response Data (Now all allow null for resets)
-  response: any | null;
+  // Response Data
+  response: any | null; 
   status: number | null;
   duration: number | null;
   resHeaders: Record<string, string> | null;

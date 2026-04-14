@@ -1,12 +1,20 @@
 import { useMutation } from "@tanstack/react-query";
-import { useComposerStore, type HttpMethod } from "../store";
+import { useComposerStore, type HttpMethod, type ProxyResponse } from "../store";
 import { api } from "@/lib/api-client";
+import { useWorkspaceStore } from "@/features/workspace/store";
 
 interface SendRequestParams {
   method: HttpMethod;
   url: string;
   headers: Record<string, string>;
   body: string;
+}
+
+interface BackendResponse {
+  success: boolean;
+  data: ProxyResponse;
+  error?: string;
+  code?: string;
 }
 
 export const useSendRequest = () => {
@@ -19,9 +27,19 @@ export const useSendRequest = () => {
     setError,
   } = useComposerStore();
 
+  const activeWorkspaceId = useWorkspaceStore(
+    (state) => state.activeWorkspaceId
+  );
+
   return useMutation({
     mutationFn: async ({ method, url, headers, body }: SendRequestParams) => {
-      const res = await api.post("/proxy", { method, url, headers, body });
+      const res = await api.post<BackendResponse>("/proxy", {
+        method,
+        url,
+        headers,
+        body,
+        workspaceId: activeWorkspaceId,
+      });
       return res.data;
     },
 
@@ -45,7 +63,7 @@ export const useSendRequest = () => {
       }
     },
 
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { error?: string; code?: string } }; message: string }) => {
       const backendError = error.response?.data;
 
       setError({
