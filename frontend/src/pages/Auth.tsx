@@ -1,6 +1,3 @@
-
 export const Auth = () => {
-  return (
-    <div>Auth</div>
-  )
-}
+  return <div>Auth</div>;
+};

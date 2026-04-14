@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button"
-import { type FallbackProps } from "react-error-boundary"
+import { Button } from "@/components/ui/button";
+import { type FallbackProps } from "react-error-boundary";
 export function GlobalError({ error, resetErrorBoundary }: FallbackProps) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4 text-center">
@@ -13,5 +13,5 @@ export function GlobalError({ error, resetErrorBoundary }: FallbackProps) {
         Try again
       </Button>
     </div>
-  )
+  );
 }

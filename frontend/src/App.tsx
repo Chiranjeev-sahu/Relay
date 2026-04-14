@@ -1,8 +1,8 @@
-import { Route, Routes } from "react-router"
-import { HomePageLayout } from "./pages/HomePageLayout"
-import { Home } from "./pages/Home"
-import { Auth } from "./pages/Auth"
-import { WorkspacePage } from "./pages/Workspace"
+import { Route, Routes } from "react-router";
+import { HomePageLayout } from "./pages/HomePageLayout";
+import { Home } from "./pages/Home";
+import { Auth } from "./pages/Auth";
+import { WorkspacePage } from "./pages/Workspace";
 
 export function App() {
   return (
@@ -17,7 +17,7 @@ export function App() {
         </Route>
       </Routes>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

@@ -1,4 +1,4 @@
-import { Outlet } from "react-router" 
+import { Outlet } from "react-router";
 export const HomePageLayout = () => {
   return (
     <div className="flex min-h-screen flex-col">
@@ -12,5 +12,5 @@ export const HomePageLayout = () => {
 
       <footer className="h-12 border-t pt-2 text-center">© 2026 Relay</footer>
     </div>
-  )
-}
+  );
+};
