@@ -1,12 +1,13 @@
 import { useMutation } from "@tanstack/react-query";
-import { useComposerStore, type HttpMethod, type ProxyResponse } from "../store";
+import { type HeaderRow, type HttpMethod } from "../store";
 import { api } from "@/lib/api-client";
 import { useWorkspaceStore } from "@/features/workspace/store";
+import { useResponseStore, type ProxyResponse } from "@/features/response-viewer/store";
 
 interface SendRequestParams {
   method: HttpMethod;
   url: string;
-  headers: Record<string, string>;
+  headers: HeaderRow[];
   body: string;
 }
 
@@ -18,25 +19,25 @@ interface BackendResponse {
 }
 
 export const useSendRequest = () => {
-  const {
-    setResponse,
-    setStatus,
-    setResponseHeaders,
-    setDuration,
-    setSize,
-    setError,
-  } = useComposerStore();
+  const { setResponse, setError, clear } = useResponseStore();
 
   const activeWorkspaceId = useWorkspaceStore(
     (state) => state.activeWorkspaceId
   );
+
+  const headersToRecord = (headers: HeaderRow[]) =>
+    Object.fromEntries(
+      headers
+        .filter((header) => header.enabled && header.key.trim().length > 0)
+        .map((header) => [header.key.trim(), header.value])
+    ) as Record<string, string>;
 
   return useMutation({
     mutationFn: async ({ method, url, headers, body }: SendRequestParams) => {
       const res = await api.post<BackendResponse>("/proxy", {
         method,
         url,
-        headers,
+        headers: headersToRecord(headers),
         body,
         workspaceId: activeWorkspaceId,
       });
@@ -45,37 +46,25 @@ export const useSendRequest = () => {
 
     onSuccess: (response) => {
       if (response.success) {
-        const { data, status, headers, duration, size } = response.data;
-
-        setResponse(data);
-        setStatus(status);
-        setResponseHeaders(headers);
-        setDuration(duration);
-        setSize(size);
+        setResponse(response.data);
         setError(null);
       } else {
+        clear();
         setError({
           message: response.error || "Proxy failed",
           code: response.code,
         });
-        setResponse(null);
-        setStatus(null);
       }
     },
 
     onError: (error: { response?: { data?: { error?: string; code?: string } }; message: string }) => {
       const backendError = error.response?.data;
 
+      clear();
       setError({
         message: backendError?.error || error.message,
         code: backendError?.code || "NETWORK_ERROR",
       });
-
-      setResponse(null);
-      setStatus(null);
-      setDuration(null);
-      setSize(null);
-      setResponseHeaders(null);
     },
   });
 };

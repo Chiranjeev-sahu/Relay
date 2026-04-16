@@ -9,10 +9,14 @@ import { ResponsePane } from "@/features/response-viewer/components/response-pan
 import { WorkspaceSwitcher } from "@/features/workspace/components/workspace-switcher";
 import { cn } from "@/lib/utils";
 import { useUIstore } from "@/stores/ui-store";
+import { useSearchParams } from "react-router";
 
 export function AppShell() {
   const { isLeftOpen, isRightOpen, toggleLeft, toggleRight } = useUIstore();
-
+  const [searchParams] = useSearchParams();
+  const isGuestMode = searchParams.get("mode") === "guest";
+  const showRightPanel = !isGuestMode && isRightOpen;
+  const showLeftPanel = !isGuestMode && isLeftOpen;
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
       <header className="flex h-12 shrink-0 items-center justify-between border-b px-4">
@@ -21,14 +25,14 @@ export function AppShell() {
       </header>
 
       <main className="flex flex-1 overflow-hidden">
-        <aside
+        {showLeftPanel && <aside
           className={cn(
             "w-64 shrink-0 overflow-y-auto border-r bg-muted/30",
             isLeftOpen && "w-16"
           )}
         >
           <WorkspaceSwitcher />
-        </aside>
+        </aside>}
 
         <ResizablePanelGroup orientation="horizontal" className="flex-1">
           <ResizablePanel defaultSize="80%" minSize="30%">
@@ -47,7 +51,8 @@ export function AppShell() {
             </ResizablePanelGroup>
           </ResizablePanel>
 
-          {isRightOpen && (
+           
+          {showRightPanel && (
             <>
               <ResizableHandle className="hover" />
               <ResizablePanel defaultSize="20%" maxSize="35%" minSize="20%">

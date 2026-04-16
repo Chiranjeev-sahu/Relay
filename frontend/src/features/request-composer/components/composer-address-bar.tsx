@@ -56,7 +56,7 @@ export const ComposerBar = () => {
       />
 
       <Button
-        className="h-10 rounded-l-none bg-indigo-600 px-8 hover:bg-indigo-700"
+        className="h-10 rounded-l-none bg-primary px-8 hover:bg-primary/70"
         onClick={handleSend}
         disabled={isPending || url.length === 0}
       >

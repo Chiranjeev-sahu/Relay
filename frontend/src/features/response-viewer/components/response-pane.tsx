@@ -1,12 +1,11 @@
 // frontend/src/features/response-viewer/components/response-pane.tsx
-import { useComposerStore } from "@/features/request-composer/store";
+import { useResponseStore } from "@/features/response-viewer/store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatBytes, formatMs, getStatusColor } from "@/lib/formatters";
 import { AlertCircle } from "lucide-react";
 
 export const ResponsePane = () => {
-  const { response, status, duration, size, error, resHeaders } =
-    useComposerStore();
+  const { response, error } = useResponseStore();
 
   if (error) {
     return (
@@ -29,7 +28,7 @@ export const ResponsePane = () => {
     );
   }
 
-  if (!response && !status) {
+  if (!response) {
     return (
       <div className="flex h-full items-center justify-center p-4 font-light text-muted-foreground/60 italic decoration-dotted">
         No response yet. Configure your request and hit send.
@@ -44,7 +43,7 @@ export const ResponsePane = () => {
           <span className="text-[10px] tracking-wider text-muted-foreground uppercase">
             Status
           </span>
-          <span className={getStatusColor(status)}>{status}</span>
+          <span className={getStatusColor(response.status)}>{response.status}</span>
         </div>
 
         <div className="h-4 w-px bg-border" />
@@ -54,7 +53,7 @@ export const ResponsePane = () => {
             Time
           </span>
           <span className="font-mono text-indigo-400">
-            {formatMs(duration)}
+            {formatMs(response.duration)}
           </span>
         </div>
 
@@ -64,7 +63,7 @@ export const ResponsePane = () => {
           <span className="text-[10px] tracking-wider text-muted-foreground uppercase">
             Size
           </span>
-          <span className="font-mono text-indigo-400">{formatBytes(size)}</span>
+          <span className="font-mono text-indigo-400">{formatBytes(response.size)}</span>
         </div>
       </div>
 
@@ -84,7 +83,7 @@ export const ResponsePane = () => {
               value="headers"
               className="rounded-none border-b-2 border-transparent px-1 py-2 text-xs font-medium transition-all data-[state=active]:border-indigo-500 data-[state=active]:bg-transparent data-[state=active]:text-foreground"
             >
-              Headers ({resHeaders ? Object.keys(resHeaders).length : 0})
+              Headers ({Object.keys(response.headers).length})
             </TabsTrigger>
           </TabsList>
         </div>
@@ -102,20 +101,19 @@ export const ResponsePane = () => {
 
         <TabsContent value="headers" className="m-0 flex-1 overflow-auto p-4">
           <div className="divide-y divide-border/50 overflow-hidden rounded-lg border bg-muted/10">
-            {resHeaders &&
-              Object.entries(resHeaders).map(([key, value]) => (
-                <div
-                  key={key}
-                  className="group flex gap-4 p-3 transition-colors hover:bg-muted/20"
-                >
-                  <span className="w-48 shrink-0 font-mono text-xs text-muted-foreground transition-colors group-hover:text-foreground/70">
-                    {key}
-                  </span>
-                  <span className="font-mono text-xs break-all selection:bg-indigo-500/20">
-                    {value}
-                  </span>
-                </div>
-              ))}
+            {Object.entries(response.headers).map(([key, value]) => (
+              <div
+                key={key}
+                className="group flex gap-4 p-3 transition-colors hover:bg-muted/20"
+              >
+                <span className="w-48 shrink-0 font-mono text-xs text-muted-foreground transition-colors group-hover:text-foreground/70">
+                  {key}
+                </span>
+                <span className="font-mono text-xs break-all selection:bg-indigo-500/20">
+                  {value}
+                </span>
+              </div>
+            ))}
           </div>
         </TabsContent>
       </Tabs>

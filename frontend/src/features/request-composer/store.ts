@@ -10,40 +10,39 @@ export type HttpMethod =
   | "DELETE"
   | "OPTIONS";
 
-export interface ProxyResponse {
-  status: number;
-  statusText: string;
-  headers: Record<string, string>;
-  data: any;
-  duration: number;
-  size: number;
+export type HeaderRow = {
+  id: string;
+  enabled: boolean;
+  key: string;
+  value: string;
+};
+
+const createHeaderRow = (overrides: Partial<HeaderRow> = {}): HeaderRow => {
+  const id = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+
+  return {
+    id,
+    enabled: true,
+    key: "",
+    value: "",
+    ...overrides,
+  };
 }
 
 interface ComposerState {
   method: HttpMethod;
   url: string;
-  headers: Record<string, string>;
+  headers: HeaderRow[];
   body: string;
 
   setMethod: (method: HttpMethod) => void;
   setUrl: (url: string) => void;
-  setHeaders: (headers: Record<string, string>) => void;
+  setHeaders: (headers: HeaderRow[]) => void;
+  addHeader: (header?: Partial<HeaderRow>) => void;
+  updateHeader: (id: string, patch: Partial<Omit<HeaderRow, "id">>) => void;
+  removeHeader: (id: string) => void;
   setBody: (body: string) => void;
-
-  // Response Data
-  response: any | null; 
-  status: number | null;
-  duration: number | null;
-  resHeaders: Record<string, string> | null;
-  size: number | null;
-  error: { message: string; code?: string } | null;
-
-  setResponse: (res: any | null) => void;
-  setStatus: (status: number | null) => void;
-  setDuration: (ms: number | null) => void;
-  setResponseHeaders: (resHeaders: Record<string, string> | null) => void;
-  setSize: (size: number | null) => void;
-  setError: (err: { message: string; code?: string } | null) => void;
+  resetDraft: () => void;
 }
 
 export const useComposerStore = create<ComposerState>()(
@@ -51,25 +50,34 @@ export const useComposerStore = create<ComposerState>()(
     (set) => ({
       method: "GET",
       url: "",
-      headers: { "Content-Type": "application/json" },
+      headers: [],
       body: "",
-      response: null,
-      status: null,
-      duration: null,
-      resHeaders: null,
-      size: null,
-      error: null,
 
       setMethod: (method) => set({ method }),
       setUrl: (url) => set({ url }),
       setHeaders: (headers) => set({ headers }),
+      addHeader: (header) =>
+        set((state) => ({
+          headers: [...state.headers, createHeaderRow(header)],
+        })),
+      updateHeader: (id, patch) =>
+        set((state) => ({
+          headers: state.headers.map((row) =>
+            row.id === id ? { ...row, ...patch } : row
+          ),
+        })),
+      removeHeader: (id) =>
+        set((state) => ({
+          headers: state.headers.filter((row) => row.id !== id),
+        })),
       setBody: (body) => set({ body }),
-      setResponse: (response) => set({ response }),
-      setStatus: (status) => set({ status }),
-      setDuration: (duration) => set({ duration }),
-      setResponseHeaders: (resHeaders) => set({ resHeaders }),
-      setSize: (size) => set({ size }),
-      setError: (error) => set({ error }),
+      resetDraft: () =>
+        set({
+          method: "GET",
+          url: "",
+          headers: [],
+          body: "",
+        }),
     }),
     { name: "relay-composer-storage" }
   )
