@@ -43,6 +43,8 @@ export const logout = async (): Promise<{ message: string }> => {
 };
 
 export const startGoogleAuth = () => {
-  const baseUrl = (api.defaults.baseURL ?? "http://localhost:3000/api/v1").replace(/\/$/, "");
+  const baseUrl = (
+    api.defaults.baseURL ?? "http://localhost:3000/api/v1"
+  ).replace(/\/$/, "");
   window.location.assign(`${baseUrl}/auth/google`);
 };
