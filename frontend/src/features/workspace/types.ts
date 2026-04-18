@@ -55,6 +55,21 @@ export interface UpdateMemberRoleInput {
   role: Exclude<Role, "OWNER">;
 }
 
+export interface UpdateWorkspaceMemberRoleVariables {
+  workspaceId: string;
+  memberId: string;
+  payload: UpdateMemberRoleInput;
+}
+
+export interface WorkspaceMemberActionVariables {
+  workspaceId: string;
+  memberId: string;
+}
+
+export interface WorkspaceInviteVariables {
+  workspaceId: string;
+}
+
 export interface UpdateMemberRoleResponse {
   success: boolean;
   updated: {

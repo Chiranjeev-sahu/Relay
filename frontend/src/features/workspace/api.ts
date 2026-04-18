@@ -7,7 +7,7 @@ import type {
   JoinWorkspaceInput,
   JoinWorkspaceResponse,
   RegenerateInviteCodeResponse,
-  UpdateMemberRoleInput,
+  UpdateWorkspaceMemberRoleVariables,
   UpdateMemberRoleResponse,
 } from "./types";
 
@@ -38,10 +38,9 @@ export const getWorkspaceMembers = async (
 };
 
 export const updateWorkspaceMemberRole = async (
-  workspaceId: string,
-  memberId: string,
-  payload: UpdateMemberRoleInput
+  variables: UpdateWorkspaceMemberRoleVariables
 ): Promise<UpdateMemberRoleResponse> => {
+  const { workspaceId, memberId, payload } = variables;
   const response = await api.patch(
     `/workspaces/${workspaceId}/members/${memberId}/role`,
     payload
@@ -59,11 +58,12 @@ export const removeWorkspaceMember = async (
 export const regenerateWorkspaceInviteCode = async (
   workspaceId: string
 ): Promise<RegenerateInviteCodeResponse> => {
-  const response = await api.post(`/workspaces/${workspaceId}/invite/regenerate`);
+  const response = await api.post(
+    `/workspaces/${workspaceId}/invite/regenerate`
+  );
   return response.data;
 };
 
 export const deleteWorkspace = async (workspaceId: string): Promise<void> => {
   await api.delete(`/workspaces/${workspaceId}`);
 };
- 
