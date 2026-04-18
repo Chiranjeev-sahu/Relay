@@ -1,10 +1,9 @@
 import { Router } from "express";
-import { verify } from "@/middleware/verify.js";
 import { proxyRequest } from "@/controllers/proxy.controller.js";
+import { optionalVerify } from "@/middleware/verify.js";
 
 const router = Router();
 
-// We parse bodies for proxy manually or using body-parser, but asyncHandler handles async issues
-router.post("/", verify, proxyRequest);
+router.post("/", optionalVerify, proxyRequest);
 
 export { router as proxyRouter };

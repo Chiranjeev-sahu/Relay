@@ -30,4 +30,19 @@ const verify = (req: AuthRequest, res: Response, next: NextFunction) => {
   next();
 };
 
-export { verify, type AuthRequest };
+const optionalVerify = (req: AuthRequest, _res: Response, next: NextFunction) => {
+  const token = req.cookies?.accessToken;
+  if (!token) {
+    next();
+    return;
+  }
+
+  const decoded = verifyToken(token);
+  if (decoded) {
+    req.userId = decoded.sub;
+  }
+
+  next();
+};
+
+export { verify, optionalVerify, type AuthRequest };
