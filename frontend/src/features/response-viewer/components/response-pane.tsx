@@ -37,13 +37,15 @@ export const ResponsePane = () => {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-background/50">
+    <div className="flex h-full flex-col overflow-hidden bg-background/90">
       <div className="flex shrink-0 items-center gap-4 border-b bg-muted/30 px-6 py-2.5 text-xs font-semibold backdrop-blur-md">
         <div className="flex items-center gap-2">
           <span className="text-[10px] tracking-wider text-muted-foreground uppercase">
             Status
           </span>
-          <span className={getStatusColor(response.status)}>{response.status}</span>
+          <span className={getStatusColor(response.status)}>
+            {response.status}
+          </span>
         </div>
 
         <div className="h-4 w-px bg-border" />
@@ -63,7 +65,9 @@ export const ResponsePane = () => {
           <span className="text-[10px] tracking-wider text-muted-foreground uppercase">
             Size
           </span>
-          <span className="font-mono text-indigo-400">{formatBytes(response.size)}</span>
+          <span className="font-mono text-indigo-400">
+            {formatBytes(response.size)}
+          </span>
         </div>
       </div>
 
@@ -72,16 +76,16 @@ export const ResponsePane = () => {
         className="flex flex-1 flex-col overflow-hidden"
       >
         <div className="border-b bg-muted/10 px-4">
-          <TabsList className="h-10 gap-6 bg-transparent p-0">
+          <TabsList className="h-10 gap-6 bg-transparent p-0" variant={"line"}>
             <TabsTrigger
               value="body"
-              className="rounded-none border-b-2 border-transparent px-1 py-2 text-xs font-medium transition-all data-[state=active]:border-indigo-500 data-[state=active]:bg-transparent data-[state=active]:text-foreground"
+              className="text-xs font-medium transition-all data-[state=active]:text-foreground"
             >
               Response Body
             </TabsTrigger>
             <TabsTrigger
               value="headers"
-              className="rounded-none border-b-2 border-transparent px-1 py-2 text-xs font-medium transition-all data-[state=active]:border-indigo-500 data-[state=active]:bg-transparent data-[state=active]:text-foreground"
+              className="text-xs font-medium transition-all data-[state=active]:text-foreground"
             >
               Headers ({Object.keys(response.headers).length})
             </TabsTrigger>
@@ -90,7 +94,7 @@ export const ResponsePane = () => {
 
         <TabsContent
           value="body"
-          className="m-0 flex-1 overflow-auto bg-zinc-950/40 p-0"
+          className="m-0 flex-1 overflow-auto bg-background p-0"
         >
           <div className="p-4">
             <pre className="font-mono text-sm leading-relaxed text-emerald-400/90 selection:bg-emerald-500/20">

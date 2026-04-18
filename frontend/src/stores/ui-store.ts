@@ -15,7 +15,7 @@ interface UIactions {
 }
 
 export const useUIstore = create<UIstate & UIactions>()((set) => ({
-  isLeftOpen: true,
+  isLeftOpen: false,
   isRightOpen: true,
   activeRightTab: "collections",
 
