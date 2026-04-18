@@ -1,19 +1,26 @@
 import { useMutation } from "@tanstack/react-query";
-import { type HeaderRow, type HttpMethod } from "../store";
 import { api } from "@/lib/api-client";
+import { AxiosError } from "axios";
 import { useWorkspaceStore } from "@/features/workspace/store";
-import { useResponseStore, type ProxyResponse } from "@/features/response-viewer/store";
+import {
+  useResponseStore,
+  type ProxyResponse,
+} from "@/features/response-viewer/store";
+import { type BodyType, type HeaderRow, type HttpMethod } from "../store";
 
 interface SendRequestParams {
   method: HttpMethod;
   url: string;
   headers: HeaderRow[];
+  bodyType: BodyType;
   body: string;
 }
 
 interface BackendResponse {
-  success: boolean;
   data: ProxyResponse;
+}
+
+interface BackendErrorResponse {
   error?: string;
   code?: string;
 }
@@ -32,32 +39,48 @@ export const useSendRequest = () => {
         .map((header) => [header.key.trim(), header.value])
     ) as Record<string, string>;
 
+  const parseBody = (bodyType: BodyType, body: string) => {
+    if (bodyType === "none") {
+      return undefined;
+    }
+
+    const trimmedBody = body.trim();
+
+    if (!trimmedBody) {
+      return undefined;
+    }
+
+    return JSON.parse(trimmedBody) as unknown;
+  };
+
   return useMutation({
-    mutationFn: async ({ method, url, headers, body }: SendRequestParams) => {
+    mutationFn: async ({
+      method,
+      url,
+      headers,
+      bodyType,
+      body,
+    }: SendRequestParams) => {
+      const workspaceId = activeWorkspaceId ?? undefined;
+      const parsedBody = parseBody(bodyType, body);
+
       const res = await api.post<BackendResponse>("/proxy", {
         method,
         url,
         headers: headersToRecord(headers),
-        body,
-        workspaceId: activeWorkspaceId,
+        body: parsedBody,
+        ...(workspaceId ? { workspaceId } : {}),
       });
+
       return res.data;
     },
 
     onSuccess: (response) => {
-      if (response.success) {
-        setResponse(response.data);
-        setError(null);
-      } else {
-        clear();
-        setError({
-          message: response.error || "Proxy failed",
-          code: response.code,
-        });
-      }
+      setResponse(response.data);
+      setError(null);
     },
 
-    onError: (error: { response?: { data?: { error?: string; code?: string } }; message: string }) => {
+    onError: (error: AxiosError<BackendErrorResponse>) => {
       const backendError = error.response?.data;
 
       clear();
