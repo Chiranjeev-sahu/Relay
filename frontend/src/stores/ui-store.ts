@@ -1,9 +1,11 @@
 import { create } from "zustand";
 
+export type RightTab = "collections" | "members" | "environments" | "history";
+
 interface UIstate {
   isLeftOpen: boolean;
   isRightOpen: boolean;
-  activeRightTab: string;
+  activeRightTab: RightTab;
 }
 
 interface UIactions {
@@ -11,7 +13,7 @@ interface UIactions {
 
   toggleRight: () => void;
 
-  setActiveTab: (tab: string) => void;
+  setActiveTab: (tab: RightTab) => void;
 }
 
 export const useUIstore = create<UIstate & UIactions>()((set) => ({
