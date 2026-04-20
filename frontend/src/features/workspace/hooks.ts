@@ -41,11 +41,15 @@ export const useWorkspaces = () => {
   });
 };
 
-export const useWorkspaceMembers = (workspaceId: string) => {
+export const useWorkspaceMembers = (
+  workspaceId: string | null,
+  enabled = true
+) => {
   return useQuery({
-    queryKey: workspaceKeys.members(workspaceId),
-    queryFn: () => getWorkspaceMembers(workspaceId),
-    enabled: !!workspaceId,
+    queryKey: workspaceKeys.members(workspaceId ?? ""),
+    queryFn: () => getWorkspaceMembers(workspaceId as string),
+    enabled: enabled && !!workspaceId,
+    staleTime: 30_000,
   });
 };
 
