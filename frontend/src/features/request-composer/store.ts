@@ -44,6 +44,7 @@ export const getBodyValidationError = (
 };
 
 export type ComposerDraft = {
+  name?: string;
   method: HttpMethod;
   url: string;
   headers?: HeaderRow[];
@@ -77,38 +78,40 @@ const normalizeRows = (rows: unknown): HeaderRow[] => {
   );
 };
 
+const splitRawUrl = (url: string): { base: string; query: string } => {
+  const qIndex = url.indexOf("?");
+  if (qIndex === -1) return { base: url, query: "" };
+  return { base: url.slice(0, qIndex), query: url.slice(qIndex + 1) };
+};
+
 const parseQueryRowsFromUrl = (url: string): QueryParamRow[] => {
-  if (!url.trim()) return [];
+  const { query } = splitRawUrl(url);
+  if (!query) return [];
 
-  try {
-    const parsedUrl = new URL(url);
-
-    return Array.from(parsedUrl.searchParams.entries()).map(([key, value]) =>
-      createHeaderRow({ key, value })
-    );
-  } catch {
-    return [];
-  }
+  return query.split("&").map((pair) => {
+    const eqIndex = pair.indexOf("=");
+    if (eqIndex === -1) return createHeaderRow({ key: pair, value: "" });
+    return createHeaderRow({
+      key: pair.slice(0, eqIndex),
+      value: pair.slice(eqIndex + 1),
+    });
+  });
 };
 
 const rowsToQueryString = (rows: QueryParamRow[]) =>
-  new URLSearchParams(
-    rows
-      .filter((row) => row.enabled && row.key.trim().length > 0)
-      .map((row) => [row.key.trim(), row.value] as [string, string])
-  ).toString();
+  rows
+    .filter((row) => row.enabled && row.key.trim().length > 0)
+    .map((row) => {
+      const k = row.key.trim();
+      return row.value !== "" ? `${k}=${row.value}` : k;
+    })
+    .join("&");
 
 const syncUrlWithParams = (url: string, rows: QueryParamRow[]) => {
   if (!url.trim()) return url;
-
-  try {
-    const parsedUrl = new URL(url);
-    parsedUrl.search = rowsToQueryString(rows);
-
-    return parsedUrl.toString();
-  } catch {
-    return url;
-  }
+  const { base } = splitRawUrl(url);
+  const qs = rowsToQueryString(rows);
+  return qs ? `${base}?${qs}` : base;
 };
 
 const deriveBodyType = (body: unknown): BodyType =>
@@ -117,6 +120,9 @@ const deriveBodyType = (body: unknown): BodyType =>
     : "none";
 
 interface ComposerState {
+  requestName: string;
+  /** True when the current request has been edited since it was last loaded or saved. */
+  isDirty: boolean;
   method: HttpMethod;
   url: string;
   headers: HeaderRow[];
@@ -124,6 +130,9 @@ interface ComposerState {
   bodyType: BodyType;
   body: string;
 
+  setRequestName: (name: string) => void;
+  /** Mark the current state as saved. Optionally updates requestName at the same time. */
+  markSaved: (name?: string) => void;
   setMethod: (method: HttpMethod) => void;
   setUrl: (url: string) => void;
   setHeaders: (headers: HeaderRow[]) => void;
@@ -143,6 +152,8 @@ interface ComposerState {
 export const useComposerStore = create<ComposerState>()(
   persist(
     (set) => ({
+      requestName: "",
+      isDirty: false,
       method: "GET",
       url: "",
       headers: [],
@@ -150,28 +161,31 @@ export const useComposerStore = create<ComposerState>()(
       bodyType: "none",
       body: "",
 
-      setMethod: (method) => set({ method }),
+      setRequestName: (requestName) => set({ requestName }),
+
+      markSaved: (name) =>
+        set((state) => ({
+          isDirty: false,
+          requestName: name !== undefined ? name : state.requestName,
+        })),
+
+      setMethod: (method) => set({ method, isDirty: true }),
 
       setUrl: (url) =>
         set((state) => {
           if (!url.trim()) {
-            return {
-              url,
-              params: [],
-            };
+            return { url, params: [], isDirty: true };
           }
 
-          try {
-            return {
-              url,
-              params: parseQueryRowsFromUrl(url),
-            };
-          } catch {
-            return {
-              url,
-              params: state.params,
-            };
-          }
+          const { query: newQuery } = splitRawUrl(url);
+          const { query: currentQuery } = splitRawUrl(state.url);
+          const paramsChanged = newQuery !== currentQuery;
+
+          return {
+            url,
+            isDirty: true,
+            params: paramsChanged ? parseQueryRowsFromUrl(url) : state.params,
+          };
         }),
 
       setHeaders: (headers) => set({ headers: normalizeRows(headers) }),
@@ -186,22 +200,19 @@ export const useComposerStore = create<ComposerState>()(
           };
         }),
 
-      setBodyType: (bodyType) =>
-        set(() => ({
-          bodyType,
-        })),
+      setBodyType: (bodyType) => set({ bodyType, isDirty: true }),
 
       loadDraft: (draft) =>
-        set(() => {
-          return {
-            method: draft.method,
-            url: draft.url,
-            headers: normalizeRows(draft.headers),
-            params: parseQueryRowsFromUrl(draft.url),
-            bodyType: deriveBodyType(draft.body),
-            body: draft.body ?? "",
-          };
-        }),
+        set(() => ({
+          requestName: draft.name ?? "",
+          isDirty: false,
+          method: draft.method,
+          url: draft.url,
+          headers: normalizeRows(draft.headers),
+          params: parseQueryRowsFromUrl(draft.url),
+          bodyType: deriveBodyType(draft.body),
+          body: draft.body ?? "",
+        })),
 
       addHeader: (header) =>
         set((state) => ({
@@ -210,6 +221,7 @@ export const useComposerStore = create<ComposerState>()(
 
       updateHeader: (id, patch) =>
         set((state) => ({
+          isDirty: true,
           headers: normalizeRows(state.headers).map((row) =>
             row.id === id ? { ...row, ...patch } : row
           ),
@@ -217,6 +229,7 @@ export const useComposerStore = create<ComposerState>()(
 
       removeHeader: (id) =>
         set((state) => ({
+          isDirty: true,
           headers: normalizeRows(state.headers).filter((row) => row.id !== id),
         })),
 
@@ -237,6 +250,7 @@ export const useComposerStore = create<ComposerState>()(
           );
 
           return {
+            isDirty: true,
             params: nextParams,
             url: syncUrlWithParams(state.url, nextParams),
           };
@@ -247,15 +261,18 @@ export const useComposerStore = create<ComposerState>()(
           const nextParams = state.params.filter((row) => row.id !== id);
 
           return {
+            isDirty: true,
             params: nextParams,
             url: syncUrlWithParams(state.url, nextParams),
           };
         }),
 
-      setBody: (body) => set({ body }),
+      setBody: (body) => set({ body, isDirty: true }),
 
       resetDraft: () =>
         set({
+          requestName: "",
+          isDirty: false,
           method: "GET",
           url: "",
           headers: [],
@@ -267,6 +284,7 @@ export const useComposerStore = create<ComposerState>()(
     {
       name: "relay-composer-storage",
       partialize: (state) => ({
+        requestName: state.requestName,
         method: state.method,
         url: state.url,
         headers: state.headers,
@@ -286,6 +304,8 @@ export const useComposerStore = create<ComposerState>()(
         return {
           ...currentState,
           ...hydratedState,
+          // Never restore dirty state — on app load everything is "clean"
+          isDirty: false,
           headers: hydratedHeaders,
           params: hydratedParams,
           bodyType: deriveBodyType(hydratedState?.body),
