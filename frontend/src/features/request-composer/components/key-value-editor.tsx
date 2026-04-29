@@ -1,4 +1,4 @@
-import { Circle, CircleCheckBig, PlusIcon, Trash2Icon } from "lucide-react";
+import { Circle, CircleCheckBig, Trash2Icon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -12,29 +12,23 @@ export type KeyValueRow = {
 type KeyValueEditorProps = {
   title: string;
   rows: KeyValueRow[];
-  onAdd: () => void;
   onRemove: (id: string) => void;
   onToggleEnabled: (id: string, enabled: boolean) => void;
   onChangeKey: (id: string, key: string) => void;
   onChangeValue: (id: string, value: string) => void;
-  addDisabled?: boolean;
   emptyLabel?: string;
 };
 
 export function KeyValueEditor({
   title,
   rows,
-  onAdd,
   onRemove,
   onToggleEnabled,
   onChangeKey,
   onChangeValue,
-  addDisabled = false,
   emptyLabel = "No items yet",
 }: KeyValueEditorProps) {
   const safeRows = Array.isArray(rows) ? rows : [];
-  const lastRow = safeRows[safeRows.length - 1];
-  const canAdd = !lastRow || lastRow.key.trim().length > 0;
 
   return (
     <div className="flex h-full flex-col bg-background">
@@ -43,18 +37,6 @@ export function KeyValueEditor({
           <h3 className="font-medium text-foreground">{title}</h3>
           <p className="text-sm text-muted-foreground">{emptyLabel}</p>
         </div>
-
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={onAdd}
-          disabled={addDisabled || !canAdd}
-          className="gap-1.5"
-        >
-          <PlusIcon className="size-4" />
-          Add
-        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -102,7 +84,6 @@ export function KeyValueEditor({
                       onChange={(e) => onChangeKey(row.id, e.target.value)}
                       disabled={rowDisabled}
                       placeholder="Key"
-                      autoFocus
                       className="h-9 w-full min-w-0 rounded-md border border-transparent bg-transparent px-2 text-sm transition-colors outline-none placeholder:text-muted-foreground focus:shadow-none focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none disabled:cursor-not-allowed disabled:border-transparent disabled:bg-muted/30 disabled:text-muted-foreground/70 disabled:shadow-none disabled:ring-0 disabled:placeholder:text-muted-foreground/50"
                     />
                   </div>
