@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/select";
 import { KeyValueEditor } from "./key-value-editor.tsx";
 import { getBodyValidationError, useComposerStore } from "../store";
+import { useEffect } from "react";
 
 const editorPanelClass =
   "min-h-44 flex-1 bg-muted/5 text-sm text-muted-foreground";
@@ -18,10 +19,8 @@ export const RequestTabs = () => {
     headers,
     bodyType,
     body,
-    addParam,
     removeParam,
     updateParam,
-    addHeader,
     removeHeader,
     updateHeader,
     setBodyType,
@@ -29,6 +28,36 @@ export const RequestTabs = () => {
   } = useComposerStore();
 
   const bodyValidationError = getBodyValidationError(bodyType, body);
+
+  useEffect(() => {
+    const { addParam } = useComposerStore.getState();
+
+    if (!params.length) {
+      addParam();
+      return;
+    }
+
+    const lastParam = params[params.length - 1];
+
+    if (lastParam?.key.trim() || lastParam?.value.trim()) {
+      addParam();
+    }
+  }, [params]);
+
+  useEffect(() => {
+    const { addHeader } = useComposerStore.getState();
+
+    if (!headers.length) {
+      addHeader();
+      return;
+    }
+
+    const lastHeader = headers[headers.length - 1];
+
+    if (lastHeader?.key.trim() || lastHeader?.value.trim()) {
+      addHeader();
+    }
+  }, [headers]);
 
   const handleBodyKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
@@ -78,7 +107,6 @@ export const RequestTabs = () => {
           title="Query Parameters"
           emptyLabel="Add query parameters for the current request"
           rows={params}
-          onAdd={() => addParam()}
           onRemove={removeParam}
           onToggleEnabled={(id: string, enabled: boolean) =>
             updateParam(id, { enabled })
@@ -95,7 +123,6 @@ export const RequestTabs = () => {
           title="Request Headers"
           emptyLabel="Add headers for the current request"
           rows={headers}
-          onAdd={() => addHeader()}
           onRemove={removeHeader}
           onToggleEnabled={(id: string, enabled: boolean) =>
             updateHeader(id, { enabled })
