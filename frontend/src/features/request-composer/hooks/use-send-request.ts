@@ -31,6 +31,11 @@ export const useSendRequest = () => {
   const activeWorkspaceId = useWorkspaceStore(
     (state) => state.activeWorkspaceId
   );
+  const activeEnvironmentId = useWorkspaceStore((state) =>
+    activeWorkspaceId
+      ? (state.activeEnvironmentByWorkspaceId[activeWorkspaceId] ?? null)
+      : null
+  );
 
   const headersToRecord = (headers: HeaderRow[]) =>
     Object.fromEntries(
@@ -62,6 +67,7 @@ export const useSendRequest = () => {
       body,
     }: SendRequestParams) => {
       const workspaceId = activeWorkspaceId ?? undefined;
+      const environmentId = activeEnvironmentId ?? undefined;
       const parsedBody = parseBody(bodyType, body);
 
       const res = await api.post<BackendResponse>("/proxy", {
@@ -69,6 +75,7 @@ export const useSendRequest = () => {
         url,
         headers: headersToRecord(headers),
         body: parsedBody,
+        ...(environmentId ? { environmentId } : {}),
         ...(workspaceId ? { workspaceId } : {}),
       });
 
