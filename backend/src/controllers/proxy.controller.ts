@@ -6,7 +6,7 @@ import { Response } from "express";
 
 const requestSchema = z.object({
   method: z.string().min(1),
-  url: z.string().url("Invalid URL format"),
+  url: z.string().min(1, "URL is required"),
   headers: z.record(z.string(), z.string()).optional(),
   body: z.any().optional(),
   environmentId: z.string().optional(),
