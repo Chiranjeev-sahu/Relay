@@ -25,6 +25,13 @@ export const errorHandler = (err: unknown, req: Request, res: Response, _next: N
       statusCode = 404;
       message = "Record not found or access denied";
     }
+  } else if (
+    err instanceof SyntaxError &&
+    "body" in err &&
+    (err as SyntaxError).message.includes("JSON")
+  ) {
+    statusCode = 400;
+    message = "Invalid JSON payload";
   } else if (err instanceof Error) {
     if (err.name === "TokenExpiredError") {
       statusCode = 401;
@@ -47,6 +54,9 @@ export const errorHandler = (err: unknown, req: Request, res: Response, _next: N
   const isOperational =
     err instanceof AppError ||
     err instanceof ZodError ||
+    (err instanceof SyntaxError &&
+      "body" in err &&
+      (err as SyntaxError).message.includes("JSON")) ||
     (err instanceof Error &&
       (err.name === "TokenExpiredError" || err.name === "JsonWebTokenError"));
 

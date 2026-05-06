@@ -23,10 +23,10 @@ app.use(cookieParser());
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/workspaces", workspacesRouter);
-app.use("/api/v1", collectionsRouter);
-app.use("/api/v1", collectionRequestRouter);
-app.use("/api/v1", environmentsRouter);
-app.use("/api/v1", workspaceRequestsRouter);
+app.use("/api/v1/workspaces", collectionsRouter);
+app.use("/api/v1/workspaces", collectionRequestRouter);
+app.use("/api/v1/workspaces", environmentsRouter);
+app.use("/api/v1/workspaces", workspaceRequestsRouter);
 app.use("/api/v1/proxy", proxyRouter);
 
 app.use(errorHandler);
