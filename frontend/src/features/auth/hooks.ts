@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/app/query-client";
+import { useWorkspaceStore } from "@/features/workspace/store";
 import {
   getMe,
   login,
@@ -15,8 +16,10 @@ export const useMe = () => {
   return useQuery({
     queryKey: ["me"],
     queryFn: getMe,
-    retry: false,
+    retry: 0,
     staleTime: 1000 * 60 * 5,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
     refetchOnWindowFocus: false,
   });
 };
@@ -36,6 +39,8 @@ export const useLogin = () => {
     mutationFn: (payload: LoginPayload) => login(payload),
     onSuccess: (user: MeUser) => {
       queryClient.setQueryData(["me"], user);
+      queryClient.removeQueries({ queryKey: ["workspaces"] });
+      useWorkspaceStore.getState().resetWorkspaceState();
     },
   });
 };
@@ -45,6 +50,8 @@ export const useRegister = () => {
     mutationFn: (payload: RegisterPayload) => register(payload),
     onSuccess: (user: MeUser) => {
       queryClient.setQueryData(["me"], user);
+      queryClient.removeQueries({ queryKey: ["workspaces"] });
+      useWorkspaceStore.getState().resetWorkspaceState();
     },
   });
 };
@@ -54,6 +61,8 @@ export const useLogout = () => {
     mutationFn: logout,
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: ["me"] });
+      queryClient.removeQueries({ queryKey: ["workspaces"] });
+      useWorkspaceStore.getState().resetWorkspaceState();
     },
   });
 };
