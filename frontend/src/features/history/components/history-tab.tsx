@@ -29,6 +29,11 @@ import {
   createHeaderRows,
   serializeBody,
 } from "@/features/workspace/components/workspace-panel-utils";
+import {
+  useResponseStore,
+  type ProxyResponse,
+} from "@/features/response-viewer/store";
+import type { HistoryRequestSummary } from "../api";
 
 interface HistoryTabProps {
   workspaceId: string;
@@ -39,6 +44,7 @@ interface HistoryTabProps {
 export function HistoryTab({ workspaceId, role, isActive }: HistoryTabProps) {
   const workspaceActions = getWorkspaceActionMatrix(role);
   const loadDraft = useComposerStore((state) => state.loadDraft);
+  const loadResponse = useResponseStore((state) => state.setResponse);
   const historyQuery = useWorkspaceHistory(workspaceId, isActive);
   const { mutateAsync: deleteHistoryItem, isPending: isDeletingHistoryItem } =
     useDeleteHistoryItem();
@@ -69,18 +75,29 @@ export function HistoryTab({ workspaceId, role, isActive }: HistoryTabProps) {
     });
   }, [historyItems, searchText]);
 
-  const handleLoadHistoryRequest = (request: {
-    method: string;
-    url: string;
-    headers: unknown;
-    body: unknown;
-  }) => {
+  const handleLoadHistoryRequest = (request: HistoryRequestSummary) => {
     loadDraft({
       method: request.method as HttpMethod,
       url: request.url,
       headers: createHeaderRows(request.headers),
       body: serializeBody(request.body),
     });
+
+    const responseData = request.responseBody ?? null;
+    const responseSize = responseData
+      ? new TextEncoder().encode(JSON.stringify(responseData)).length
+      : 0;
+
+    const historyResponse: ProxyResponse = {
+      status: request.responseStatus ?? 0,
+      statusText: "",
+      headers: {},
+      data: responseData,
+      duration: 0,
+      size: responseSize,
+    };
+
+    loadResponse(historyResponse);
   };
 
   const handleDeleteHistory = async () => {

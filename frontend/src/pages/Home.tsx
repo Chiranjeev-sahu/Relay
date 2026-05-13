@@ -2,6 +2,23 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/features/auth/hooks";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { PrecisionGrid, FeatureWireframe, SectionHeader, CodeView, FaqItem, StickyNav, WorkflowStep, StatItem } from "@/components/landing-components";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
 
 export const Home = () => {
   const navigate = useNavigate();
@@ -14,182 +31,186 @@ export const Home = () => {
   }, [isAuthenticated, navigate]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground selection:bg-primary/30">
-      {/* Navigation */}
-      {/* <nav className="flex items-center justify-between px-6 py-4 md:px-12 backdrop-blur-md sticky top-0 z-50 border-b border-border/40">
-        <div className="flex items-center gap-3">
-          <img src="/favicon.png" alt="Relay Logo" className="size-8 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
-          <span className="text-xl font-bold tracking-tight">Relay</span>
-        </div>
-        <div className="flex gap-4">
-          <Button variant="ghost" onClick={() => navigate("/auth")}>
-            Sign In
-          </Button>
-          <Button onClick={() => navigate("/auth")}>
-            Get Started
-          </Button>
-        </div>
-      </nav> */}
+    <motion.div
+      key="home"
+      initial="hidden"
+      animate="visible"
+      variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+      transition={{ duration: 0.5 }}
+      className="flex min-h-screen flex-col bg-background text-foreground"
+    >
+      <StickyNav onSignIn={() => navigate("/auth")} onGetStarted={() => navigate("/auth")} />
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative flex flex-col items-center overflow-hidden px-6 pt-24 pb-32 text-center md:px-12 lg:pt-32 lg:pb-40">
-          <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-          <div className="absolute top-0 right-0 left-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/20 opacity-50 blur-[100px]"></div>
+        <motion.section
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="relative flex flex-col items-center justify-center px-6 pt-32 pb-40 text-center"
+        >
+          <PrecisionGrid />
 
-          <div className="mb-8 inline-flex items-center rounded-full border bg-muted/50 px-3 py-1 text-sm font-medium backdrop-blur-sm transition-colors hover:bg-muted/80">
-            <span className="mr-2 flex size-2 animate-pulse rounded-full bg-primary"></span>
-            Relay v1.0 is now live
-          </div>
+          <motion.div
+            variants={fadeInUp}
+            className="mb-6 inline-flex items-center gap-2 border border-border bg-background px-4 py-1 text-xs font-mono uppercase tracking-widest text-muted-foreground"
+          >
+            <span className="size-2 bg-primary"></span>
+            Relay v1.0 / Architecture
+          </motion.div>
 
-          <h1 className="max-w-4xl bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent sm:text-6xl md:text-7xl lg:text-8xl">
-            Test APIs. <br />
-            <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              Collaborate instantly.
-            </span>
-          </h1>
+          <motion.h1
+            variants={fadeInUp}
+            className="max-w-4xl text-5xl font-black uppercase tracking-tighter sm:text-7xl lg:text-8xl"
+          >
+            API testing <br />
+            <span className="text-primary">re-engineered.</span>
+          </motion.h1>
 
-          <p className="mt-8 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-            A beautiful, lightning-fast workspace for your team. Manage
-            collections, switch environments instantly, and share requests
-            without leaving the browser.
-          </p>
+          <motion.p
+            variants={fadeInUp}
+            className="mt-8 max-w-xl text-lg text-muted-foreground"
+          >
+            A minimalist, high-performance workspace for modern API development.
+            Precision tools, zero bloat.
+          </motion.p>
 
-          <div className="mt-10 flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
+          <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md">
             <Button
               size="lg"
-              className="h-12 px-8 text-base shadow-lg shadow-primary/25 transition-transform hover:-translate-y-0.5"
+              className="h-10 px-8 uppercase tracking-widest"
               onClick={() => navigate("/auth")}
             >
-              Start for free
+              Initialize
             </Button>
             <Button
               variant="outline"
               size="lg"
-              className="h-12 bg-background/50 px-8 text-base backdrop-blur-sm transition-transform hover:-translate-y-0.5"
+              className="h-10 px-8 uppercase tracking-widest"
               onClick={() => navigate("/workspace?mode=guest")}
             >
-              Try Guest Mode
+              Guest Access
             </Button>
           </div>
-        </section>
+        </motion.section>
+
+        {/* Workflow Section */}
+        <motion.section
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="border-t border-border px-6 py-24"
+        >
+          <div className="mx-auto max-w-5xl">
+            <SectionHeader title="Operational Workflow" subtitle="Streamlined for developer velocity." />
+            <motion.div
+              variants={staggerContainer}
+              className="grid grid-cols-1 md:grid-cols-3 gap-12"
+            >
+              <WorkflowStep number="01" title="Configure" desc="Define your workspace and variables." />
+              <WorkflowStep number="02" title="Execute" desc="Fire requests with precise control." />
+              <WorkflowStep number="03" title="Analyze" desc="Review logs and optimize endpoints." />
+            </motion.div>
+          </div>
+        </motion.section>
+
+        {/* Stats Section */}
+        <motion.section
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="border-t border-border bg-muted/20 px-6 py-12"
+        >
+          <div className="mx-auto max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-0">
+            <StatItem label="Active Requests" value="1.2M+" />
+            <StatItem label="Avg Latency" value="12ms" />
+            <StatItem label="Team Efficiency" value="40%" />
+          </div>
+        </motion.section>
 
         {/* Features Section */}
-        <section className="border-y border-border/40 bg-muted/30 px-6 py-24 md:px-12">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-16 text-center">
-              <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-5xl">
-                Everything you need to build better APIs
-              </h2>
-              <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-                Relay replaces clunky desktop apps with a sleek, web-native
-                experience designed for modern development teams.
-              </p>
-            </div>
-
-            <div className="grid gap-8 md:grid-cols-3">
-              {/* Feature 1 */}
-              <div className="group rounded-2xl border bg-background p-8 shadow-sm transition-all hover:border-primary/50 hover:shadow-md">
-                <div className="mb-6 flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                </div>
-                <h3 className="mb-3 text-xl font-semibold">Team Workspaces</h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  Invite your team, assign roles, and share your API collections
-                  instantly. No more exporting and importing JSON files.
-                </p>
-              </div>
-
-              {/* Feature 2 */}
-              <div className="group rounded-2xl border bg-background p-8 shadow-sm transition-all hover:border-primary/50 hover:shadow-md">
-                <div className="mb-6 flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polygon points="12 2 2 7 12 12 22 7 12 2" />
-                    <polyline points="2 17 12 22 22 17" />
-                    <polyline points="2 12 12 17 22 12" />
-                  </svg>
-                </div>
-                <h3 className="mb-3 text-xl font-semibold">
-                  Dynamic Environments
-                </h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  Switch between Local, Staging, and Production with a single
-                  click. Variables automatically interpolate in URLs, headers,
-                  and bodies.
-                </p>
-              </div>
-
-              {/* Feature 3 */}
-              <div className="group rounded-2xl border bg-background p-8 shadow-sm transition-all hover:border-primary/50 hover:shadow-md">
-                <div className="mb-6 flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M3 3v18h18" />
-                    <path d="m19 9-5 5-4-4-3 3" />
-                  </svg>
-                </div>
-                <h3 className="mb-3 text-xl font-semibold">Request History</h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  Never lose a test. Relay automatically logs your request
-                  history, so you can revisit and re-run past API calls anytime.
-                </p>
-              </div>
-            </div>
+        <motion.section
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="border-t border-border px-6 py-24"
+        >
+          <div className="mx-auto max-w-5xl">
+            <SectionHeader 
+              title="Core Capabilities" 
+              subtitle="Built for developers who value precision over feature bloat."
+            />
+            <motion.div
+              variants={staggerContainer}
+              className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            >
+              <FeatureWireframe 
+                title="Team Sync" 
+                description="Synchronized workspaces designed for high-velocity teams."
+              />
+              <FeatureWireframe 
+                title="Dynamic ENV" 
+                description="Instant context switching across local, staging, and production."
+              />
+              <FeatureWireframe 
+                title="Audit Trail" 
+                description="Automatic request logging for complete operational transparency."
+              />
+            </motion.div>
           </div>
-        </section>
+        </motion.section>
+
+        {/* Technical Showcase */}
+        <motion.section
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="border-t border-border bg-muted/20 px-6 py-24"
+        >
+          <div className="mx-auto max-w-5xl grid md:grid-cols-2 gap-16 items-center">
+            <motion.div
+              variants={fadeInUp}
+              className="text-left"
+            >
+              <h3 className="text-2xl font-black uppercase tracking-tighter mb-4">Technical Purity</h3>
+              <p className="text-muted-foreground mb-6">
+                Relay is designed to get out of your way. Our interface is a wrapper around 
+                the most efficient API request engine available, ensuring your tests are as fast 
+                as the network allows.
+              </p>
+              <Button variant="outline" className="uppercase tracking-widest">Read Documentation</Button>
+            </motion.div>
+            <CodeView />
+          </div>
+        </motion.section>
+
+        {/* FAQ Section */}
+        <motion.section
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="border-t border-border px-6 py-24"
+        >
+          <div className="mx-auto max-w-3xl">
+            <SectionHeader title="Technical FAQ" subtitle="Common questions about our architecture." />
+            <motion.div
+              variants={staggerContainer}
+              className="space-y-4"
+            >
+              <FaqItem q="Is it web-native?" a="Yes. Relay runs entirely in your browser, utilizing optimized WebAssembly and IndexedDB." />
+              <FaqItem q="Can I export data?" a="We support native JSON export for all collections, keeping you in control of your data." />
+            </motion.div>
+          </div>
+        </motion.section>
       </main>
 
-      {/* Footer CTA */}
-      <footer className="border-t px-6 py-12 text-center md:py-16">
-        <h2 className="mb-6 text-2xl font-semibold">
-          Ready to streamline your API testing?
-        </h2>
-        <Button
-          size="lg"
-          className="px-8 shadow-lg shadow-primary/20"
-          onClick={() => navigate("/auth")}
-        >
-          Create your Workspace
-        </Button>
-        <p className="mt-8 text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} Relay API Client. Built for
-          developers.
-        </p>
-      </footer>
-    </div>
+      <motion.footer
+        variants={fadeInUp}
+        className="border-t border-border px-6 py-12 text-center text-xs font-mono uppercase tracking-widest text-muted-foreground"
+      >
+        <div className="mb-4">Relay / Operational Interface</div>
+        &copy; {new Date().getFullYear()} All Rights Reserved.
+      </motion.footer>
+    </motion.div>
   );
 };
