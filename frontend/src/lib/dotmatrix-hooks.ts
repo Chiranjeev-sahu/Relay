@@ -40,7 +40,6 @@ export function useCyclePhase({
 
   useEffect(() => {
     if (!active) {
-      setPhase(0);
       return;
     }
 
@@ -60,7 +59,7 @@ export function useCyclePhase({
     return () => cancelAnimationFrame(rafId);
   }, [active, cycleMsBase, speed]);
 
-  return phase;
+  return active ? phase : 0;
 }
 
 interface UseSteppedCycleOptions {
@@ -128,7 +127,6 @@ export function useSteppedCycle({
     if (!active) {
       activeRef.current = false;
       currentStepRef.current = idleStep;
-      setStep(idleStep);
       return;
     }
 

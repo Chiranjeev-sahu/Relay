@@ -98,7 +98,7 @@ export const ResponsePane = () => {
         >
           <div className="p-4">
             <pre className="font-mono text-sm leading-relaxed text-emerald-400/90 selection:bg-emerald-500/20">
-              <code>{JSON.stringify(response, null, 2)}</code>
+              <code>{JSON.stringify(response.data.data, null, 2)}</code>
             </pre>
           </div>
         </TabsContent>

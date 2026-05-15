@@ -4,7 +4,7 @@ export interface ProxyResponse {
   status: number;
   statusText: string;
   headers: Record<string, string>;
-  data: unknown;
+  data: { data: unknown };
   duration: number;
   size: number;
 }

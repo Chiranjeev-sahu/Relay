@@ -175,9 +175,10 @@ export function useEnvironmentEditor(workspaceId: string) {
 
       toast.success("Environment saved");
       closeEditor();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { response?: { status?: number } };
       const msg =
-        err?.response?.status === 409
+        error?.response?.status === 409
           ? "Duplicate variable key — each key must be unique within an environment"
           : "Failed to save environment";
       toast.error(msg);

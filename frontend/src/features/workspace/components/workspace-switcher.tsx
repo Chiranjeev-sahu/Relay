@@ -11,9 +11,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { canPerformWorkspaceAction } from "@/lib/role-guards";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
 
 import {
   useJoinWorkspace,
@@ -34,10 +40,77 @@ const getWorkspaceInitials = (name: string) => {
   return `${parts[0]!.charAt(0)}${parts[1]!.charAt(0)}`.toUpperCase();
 };
 
+type JoinWorkspaceDialogProps = {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  inviteCode: string;
+  onInviteCodeChange: (value: string) => void;
+  onJoin: () => void;
+  isJoining: boolean;
+  trigger: React.ReactElement;
+};
+
+const JoinWorkspaceDialog = ({
+  isOpen,
+  onOpenChange,
+  inviteCode,
+  onInviteCodeChange,
+  onJoin,
+  isJoining,
+  trigger,
+}: JoinWorkspaceDialogProps) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Join workspace</DialogTitle>
+          <DialogDescription>
+            Paste an invite code to join another workspace.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-2">
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Invite Code
+          </p>
+          <input
+            value={inviteCode}
+            onChange={(event) => onInviteCodeChange(event.target.value)}
+            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm ring-offset-background outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            placeholder="Paste invite code"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+          />
+        </div>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={onJoin}
+            disabled={isJoining || !inviteCode.trim()}
+          >
+            {isJoining ? "Joining..." : "Join"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export const WorkspaceSwitcher = () => {
   const { data, isLoading, error } = useWorkspaces();
   const { activeWorkspaceId, setActiveWorkspace } = useWorkspaceStore();
-  const { isLeftOpen } = useUIstore();
+  const isLeftOpen = useUIstore((state) => state.isLeftOpen);
   const { mutateAsync: joinWorkspace, isPending: isJoiningWorkspace } =
     useJoinWorkspace();
   const { mutateAsync: regenerateInviteCode, isPending: isRegenerating } =
@@ -129,6 +202,32 @@ export const WorkspaceSwitcher = () => {
   if (!isLeftOpen) {
     return (
       <div className="flex flex-col items-center gap-2 px-2 py-3">
+        <div className="my-2 w-full">
+          <JoinWorkspaceDialog
+            isOpen={isJoinDialogOpen}
+            onOpenChange={setIsJoinDialogOpen}
+            inviteCode={inviteCode}
+            onInviteCodeChange={setInviteCode}
+            onJoin={handleJoinWorkspace}
+            isJoining={isJoiningWorkspace}
+            trigger={
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="h-8 w-full rounded-md border-emerald-500/20 bg-emerald-500/10 px-0 text-xs text-emerald-400 hover:bg-emerald-500/20 focus-visible:ring-emerald-500/30"
+                    aria-label="Join workspace"
+                  >
+                    <Plus className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Join workspace</TooltipContent>
+              </Tooltip>
+            }
+          />
+        </div>
         {data?.workspaces?.map((workspace: WorkspaceSummary) => {
           const isActive = activeWorkspaceId === workspace.id;
 
@@ -140,7 +239,7 @@ export const WorkspaceSwitcher = () => {
               title={workspace.name}
               aria-label={workspace.name}
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-xl text-[11px] font-semibold transition-colors",
+                "flex h-8 w-10 items-center justify-center rounded-sm text-[11px] font-semibold transition-colors",
                 isActive
                   ? "bg-primary text-primary-foreground"
                   : "bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -155,62 +254,27 @@ export const WorkspaceSwitcher = () => {
   }
 
   return (
-    <div className="p-2">
+    <div className="flex h-full flex-col">
       {isLeftOpen ? (
-        <div className="mb-2 flex items-center gap-2 px-1">
-          <Dialog open={isJoinDialogOpen} onOpenChange={setIsJoinDialogOpen}>
-            <DialogTrigger asChild>
+        <div className="my-2 flex items-center gap-2 p-1">
+          <JoinWorkspaceDialog
+            isOpen={isJoinDialogOpen}
+            onOpenChange={setIsJoinDialogOpen}
+            inviteCode={inviteCode}
+            onInviteCodeChange={setInviteCode}
+            onJoin={handleJoinWorkspace}
+            isJoining={isJoiningWorkspace}
+            trigger={
               <Button
                 type="button"
                 variant="secondary"
                 size="sm"
-                className="h-8 w-full justify-center px-3 text-xs"
+                className="h-8 w-full justify-center border-emerald-500/20 bg-emerald-500/10 px-3 text-xs text-emerald-400 hover:bg-emerald-500/20 focus-visible:ring-emerald-500/30"
               >
                 Join workspace
               </Button>
-            </DialogTrigger>
-
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Join workspace</DialogTitle>
-                <DialogDescription>
-                  Paste an invite code to join another workspace.
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-2">
-                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                  Invite Code
-                </p>
-                <input
-                  value={inviteCode}
-                  onChange={(event) => setInviteCode(event.target.value)}
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm ring-offset-background outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  placeholder="Paste invite code"
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  spellCheck={false}
-                />
-              </div>
-
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsJoinDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleJoinWorkspace}
-                  disabled={isJoiningWorkspace || !inviteCode.trim()}
-                >
-                  {isJoiningWorkspace ? "Joining..." : "Join"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+            }
+          />
         </div>
       ) : null}
 
@@ -229,7 +293,7 @@ export const WorkspaceSwitcher = () => {
           <div
             key={workspace.id}
             className={cn(
-              "flex items-center justify-between gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-accent/60",
+              "flex items-center justify-between gap-2 rounded-none px-2 py-1.5 transition-colors hover:bg-accent/60",
               isActive && "bg-accent"
             )}
             onClick={() => setActiveWorkspace(workspace.id)}
@@ -269,7 +333,7 @@ export const WorkspaceSwitcher = () => {
                       </DialogDescription>
                     </DialogHeader>
 
-                    <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+                    <div className="space-y-2 rounded-lg border bg-muted p-3">
                       <p className="text-xs tracking-wide text-muted-foreground uppercase">
                         Invite Code
                       </p>

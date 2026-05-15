@@ -27,7 +27,8 @@ import { MembersTab } from "./members-tab";
 export function WorkspacePanel() {
   const { data, isLoading } = useWorkspaces();
   const { activeWorkspaceId } = useWorkspaceStore();
-  const { activeRightTab, setActiveTab } = useUIstore();
+  const activeRightTab = useUIstore((state) => state.activeRightTab);
+  const setActiveTab = useUIstore((state) => state.setActiveTab);
   const { mutateAsync: deleteWorkspace, isPending: isDeletingWorkspace } =
     useDeleteWorkspace();
   const [isDeleteWorkspaceOpen, setIsDeleteWorkspaceOpen] = useState(false);
@@ -86,7 +87,7 @@ export function WorkspacePanel() {
 
   return (
     <div className="flex h-full min-h-0 overflow-hidden">
-      <aside className="flex w-10 shrink-0 flex-col items-center gap-2 border-r bg-background/95 px-1 py-3">
+      <aside className="flex w-10 shrink-0 flex-col items-center gap-2 border-x bg-background/95 px-1 py-3">
         {tabItems.map((tab) => {
           const isActive = activeRightTab === tab.value;
           const Icon = tab.icon;

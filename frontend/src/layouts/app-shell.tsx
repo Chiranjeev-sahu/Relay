@@ -1,8 +1,4 @@
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import {
   Tooltip,
   TooltipContent,
@@ -29,6 +25,7 @@ import { LogOut, Monitor, Moon, Sun, User as UserIcon } from "lucide-react";
 import { useNavigate } from "react-router";
 import { cn } from "@/lib/utils";
 import { useUIstore } from "@/stores/ui-store";
+import { useShallow } from 'zustand/react/shallow';
 import {
   PanelLeftClose,
   PanelLeftOpen,
@@ -125,7 +122,12 @@ function UserProfileMenu() {
 }
 
 export function AppShell() {
-  const { isLeftOpen, isRightOpen, toggleLeft, toggleRight } = useUIstore();
+  const { isLeftOpen, isRightOpen, toggleLeft, toggleRight } = useUIstore(useShallow((state) => ({
+    isLeftOpen: state.isLeftOpen,
+    isRightOpen: state.isRightOpen,
+    toggleLeft: state.toggleLeft,
+    toggleRight: state.toggleRight
+  })));
   const [searchParams] = useSearchParams();
   const isGuestMode = searchParams.get("mode") === "guest";
   const showRightPanel = !isGuestMode && isRightOpen;
@@ -152,7 +154,7 @@ export function AppShell() {
         {showLeftPanel && (
           <aside
             className={cn(
-              "w-12 shrink-0 overflow-x-clip overflow-y-auto border-r bg-muted/30 transition-all duration-300",
+              "bg-muted-10 w-12 shrink-0 overflow-x-clip overflow-y-auto border-r transition-all duration-300",
               isLeftOpen && "w-64"
             )}
           >
@@ -170,7 +172,7 @@ export function AppShell() {
                   <RequestTabs />
                 </div>
               </ResizablePanel>
-              <ResizableHandle className="bg-border transition-colors hover:bg-primary/50 data-resize-handle-active:bg-primary/60" />
+              {/* <ResizableHandle className="bg-border transition-colors hover:bg-primary/50 data-resize-handle-active:bg-primary/60" /> */}
               <ResizablePanel defaultSize="30%" minSize="20%">
                 <div className="h-full overflow-y-auto border-t bg-muted/10 p-4">
                   <ResponsePane />
@@ -181,7 +183,7 @@ export function AppShell() {
 
           {showRightPanel && (
             <>
-              <ResizableHandle className="bg-border transition-colors hover:bg-primary/50 data-resize-handle-active:bg-primary/60" />
+              {/* <ResizableHandle className="bg-border transition-colors hover:bg-primary/50 data-resize-handle-active:bg-primary/60" /> */}
               <ResizablePanel defaultSize="20%" maxSize="35%" minSize="20%">
                 <aside className="h-full overflow-y-auto bg-background">
                   <WorkspacePanel />
@@ -192,7 +194,7 @@ export function AppShell() {
         </ResizablePanelGroup>
       </main>
 
-      <footer className="flex h-8 shrink-0 items-center justify-between border-t bg-muted/50 px-2 text-xs">
+      <footer className="flex h-8 shrink-0 items-center justify-between border-t bg-background px-2 text-xs">
         <div className="flex items-center gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
