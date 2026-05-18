@@ -8,7 +8,7 @@ import {
 import { getWorkspaceActionMatrix } from "@/lib/role-guards";
 import { cn } from "@/lib/utils";
 import { useUIstore } from "@/stores/ui-store";
-import { Clock3, FolderGit2, Layers, Users } from "lucide-react";
+import { Clock3, FolderGit2, Layers, Trash2, Users } from "lucide-react";
 import { useState } from "react";
 
 import { CollectionsTab } from "@/features/collections/components";
@@ -130,16 +130,16 @@ export function WorkspacePanel() {
           </div>
 
           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-            <span>Workspace controls load on demand.</span>
             {workspaceActions.canDeleteWorkspace ? (
               <Button
                 type="button"
                 variant="destructive"
                 size="sm"
-                className="h-7 px-2 text-xs"
+                className="h-7 w-full px-2 text-xs"
                 onClick={() => setIsDeleteWorkspaceOpen(true)}
                 disabled={isDeletingWorkspace}
               >
+                <Trash2 />
                 {isDeletingWorkspace ? "Deleting..." : "Delete workspace"}
               </Button>
             ) : null}
