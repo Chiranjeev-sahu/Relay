@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { env } from "./env.js";
 const options = {
-  sameSite: "lax" as const,
+  sameSite: (env.NODE_ENV === "production" ? "none" : "lax") as 'none' | 'lax',
   httpOnly: true,
   secure: env.NODE_ENV === "production",
   maxAge: 7 * 24 * 60 * 60 * 1000,
