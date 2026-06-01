@@ -85,9 +85,18 @@ function UserProfileMenu() {
         <Button
           variant="ghost"
           size="icon"
-          className="size-8 rounded-full bg-muted"
+          className="size-8 overflow-hidden rounded-full bg-muted"
         >
-          <UserIcon className="size-4" />
+          {user.image ? (
+            <img
+              src={user.image}
+              alt={user.name || "User"}
+              className="h-full w-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <UserIcon className="size-4" />
+          )}
           <span className="sr-only">User profile</span>
         </Button>
       </DropdownMenuTrigger>
